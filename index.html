@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>Carica Kombat V1.5.3 Mobile</title><style>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>Carica Kombat V1.5.4 Mobile</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;background:#121826;color:#fff;font-family:Arial,sans-serif;overflow:hidden;touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none}.top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#0b1020}.badge{background:#050811;border-radius:14px;padding:10px 14px;font-weight:900}.arena{position:relative;height:calc(100vh - 174px);min-height:380px;background:linear-gradient(#202a3d 0 72%,#34383f 72%);overflow:hidden;border-bottom:3px solid #555}.fighter{position:absolute;left:8%;bottom:0;width:512px;height:512px;transform-origin:bottom left;transform:scale(.82);overflow:hidden}.fighter img{position:absolute;left:0;top:0;height:512px;max-width:none;display:block;pointer-events:none;image-rendering:auto}.status{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#080b12dd;padding:8px 16px;border-radius:12px;font-weight:900}.controls{height:110px;display:flex;align-items:center;justify-content:space-between;padding:12px;background:#292e36;gap:10px}.group{display:flex;gap:8px;flex-wrap:wrap}.controls button{min-width:62px;height:58px;border:0;border-radius:15px;font-weight:900;font-size:14px;cursor:pointer;touch-action:none}.controls button:active{transform:scale(.94)}.move button{font-size:24px}@media(max-width:900px),(pointer:coarse){.top{height:46px;padding:6px 10px;font-size:11px}.badge{padding:7px 10px}.arena{height:calc(100vh - 142px);min-height:210px}.fighter{left:0;bottom:0;transform:scale(var(--mobile-fighter-scale,.58))}.controls{height:96px;padding:7px 9px;gap:8px}.controls button{min-width:56px;height:62px;font-size:11px;border-radius:16px}.move{flex-wrap:nowrap}.move button{min-width:68px;font-size:25px}.group:last-child{justify-content:flex-end;flex-wrap:nowrap;gap:6px}}@media(max-width:680px) and (orientation:portrait){body:before{content:"Gire o celular para jogar ↻";position:absolute;z-index:99;inset:0;background:#0b1020;display:grid;place-items:center;font-size:22px;font-weight:900;text-align:center;padding:30px}.top,.arena,.controls{visibility:hidden}}
 
 .dpad{position:relative;width:190px;height:92px;flex:0 0 190px}
@@ -15,15 +15,13 @@
 }
 
 
-/* V1.5.3 — somente os controles viram overlay; arena/fighter permanecem V1.5 */
+/* V1.5.4 — mobile polish: overlay ergonômico, sem alterar arena/fighter */
 @media (orientation:landscape) and (pointer:coarse){
   .controls{
     position:fixed !important;
-    left:0 !important;
-    right:0 !important;
+    left:0 !important; right:0 !important;
     bottom:calc(10px + env(safe-area-inset-bottom)) !important;
-    height:92px !important;
-    min-height:0 !important;
+    height:108px !important; min-height:0 !important;
     padding:0 18px !important;
     background:transparent !important;
     display:flex !important;
@@ -34,10 +32,32 @@
   }
   .controls button{
     pointer-events:auto !important;
-    opacity:.72;
+    opacity:.58 !important;
+    border:2px solid rgba(255,255,255,.48) !important;
+    background:rgba(238,241,246,.72) !important;
+    box-shadow:0 4px 12px rgba(0,0,0,.22) !important;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;
   }
-  .attack{margin-left:auto !important}
+  .controls button:active{opacity:.9 !important;transform:scale(.94)}
+  .dpad{width:170px !important;height:88px !important;flex:0 0 170px !important}
+  .dpad button{width:54px !important;min-width:54px !important;height:40px !important}
+  .dpad .up,.dpad .down{left:58px !important}
+  .attack{
+    position:relative !important;
+    width:154px !important;height:104px !important;
+    margin-left:auto !important;display:block !important;
+  }
+  .attack .attack-btn{
+    position:absolute !important;
+    width:66px !important;min-width:66px !important;height:66px !important;
+    border-radius:50% !important;font-size:25px !important;
+  }
+  .attack .attack-btn[data-act="soco"]{left:4px !important;top:2px !important}
+  .attack .attack-btn[data-act="chute"]{right:2px !important;bottom:0 !important}
 }
+/* O rótulo de animação deixa de poluir a interface no mobile. */
+@media (pointer:coarse){#label{display:none !important}}
 
 </style>
 <link rel="manifest" href="manifest.webmanifest">
@@ -46,7 +66,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-192.png">
-</head><body><div class="top"><div class="badge">CARICA KOMBAT MOBILE V1.5.3</div><div>V22.8 • OVERLAY SAFE</div></div><div class="arena" id="arena"><div class="status" id="status">IDLE</div><div class="fighter" id="fighter"><img id="sprite" alt="Personagem"></div></div><div class="controls">
+</head><body><div class="top"><div class="badge">CARICA KOMBAT MOBILE V1.5.4</div><div>V22.8 • MOBILE POLISH</div></div><div class="arena" id="arena"><div class="status" id="status">IDLE</div><div class="fighter" id="fighter"><img id="sprite" alt="Personagem"></div></div><div class="controls">
 <div class="dpad" aria-label="Direcional">
   <button class="up" data-act="jump">▲</button>
   <button class="left" data-act="left">◀</button>
