@@ -935,6 +935,8 @@ chefao:{name:'CHEFÃO',face:'boss_assets/face.png',vs:'boss_assets/vs.png',asset
 function assetsFor(img){return img===I2?P2_ASSETS:P1_ASSETS;}
 
 const ckFightImageCache=new Map();
+const ckFightRamImages=new Map();
+const ckFightRamAudio=new Map();
 function ckLoadImage(src){
  if(!src)return Promise.resolve();
  if(ckFightImageCache.has(src))return ckFightImageCache.get(src);
@@ -943,10 +945,36 @@ function ckLoadImage(src){
    const finish=()=>resolve();
    im.onload=()=>{ if(im.decode)im.decode().catch(()=>{}).finally(finish); else finish(); };
    im.onerror=finish; im.src=src;
+   ckFightRamImages.set(src,im);
    if(im.complete&&im.naturalWidth){ if(im.decode)im.decode().catch(()=>{}).finally(finish); else finish(); }
  });
  ckFightImageCache.set(src,p); return p;
 }
+
+function ckWarmAudio(src){
+ if(!src)return Promise.resolve();
+ if(ckFightRamAudio.has(src))return ckFightRamAudio.get(src).promise;
+ let done=false,resolveDone;
+ const promise=new Promise(r=>resolveDone=r);
+ const a=new Audio(); a.preload='auto'; a.src=src;
+ const finish=()=>{if(done)return;done=true;resolveDone();};
+ a.addEventListener('canplaythrough',finish,{once:true});
+ a.addEventListener('loadeddata',finish,{once:true});
+ a.addEventListener('error',finish,{once:true});
+ try{a.load();}catch(_e){finish();}
+ setTimeout(finish,1800);
+ ckFightRamAudio.set(src,{audio:a,promise});
+ return promise;
+}
+function ckFightAudioUrls(){
+ const urls=new Set();
+ document.querySelectorAll('audio[src],source[src]').forEach(el=>{
+   const s=el.getAttribute('src');
+   if(s && /\.(mp3|wav|ogg|m4a)(\?|$)/i.test(s))urls.add(s);
+ });
+ return [...urls];
+}
+
 function ckStageImage(){
  if(typeof TOWER_STAGE_BG!=='undefined'&&TOWER_STAGE_BG[selectedStage])return TOWER_STAGE_BG[selectedStage];
  if(selectedStage==='buteco')return 'stages/buteco.png';
@@ -962,11 +990,17 @@ async function ckPrepareSelectedFight(){
  if(p1&&p1.vs)list.push(p1.vs); if(p2&&p2.vs)list.push(p2.vs);
  const st=ckStageImage(); if(st)list.push(st);
  const unique=[...new Set(list)];
- let done=0,total=Math.max(1,unique.length);
- async function one(src){await ckLoadImage(src);done++;let n=Math.round(done*100/total);if(bar)bar.style.width=n+'%';if(pct)pct.textContent=n+'%';}
+ const audios=ckFightAudioUrls();
+ let done=0,total=Math.max(1,unique.length+audios.length);
+ function progress(){let n=Math.round(done*100/total);if(bar)bar.style.width=n+'%';if(pct)pct.textContent=n+'%';}
+ async function one(src){await ckLoadImage(src);done++;progress();}
+ async function oneAudio(src){await ckWarmAudio(src);done++;progress();}
  let next=0;
  async function worker(){while(next<unique.length){const i=next++;await one(unique[i]);}}
  await Promise.all(Array.from({length:Math.min(5,Math.max(1,unique.length))},worker));
+ let anext=0;
+ async function audioWorker(){while(anext<audios.length){const i=anext++;await oneAudio(audios[i]);}}
+ await Promise.all(Array.from({length:Math.min(3,Math.max(1,audios.length))},audioWorker));
  if(bar)bar.style.width='100%';if(pct)pct.textContent='100%';
  await new Promise(r=>setTimeout(r,90));
  if(ov)ov.classList.remove('on');
@@ -2413,7 +2447,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.4 MOBILE • NOVO TOQUE P1 • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.6 MOBILE • PERFORMANCE COMBATE • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
