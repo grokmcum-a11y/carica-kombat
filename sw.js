@@ -1,4 +1,4 @@
-const CACHE_NAME='carica-kombat-fix044-v1';
+const CACHE_NAME='carica-kombat-fix045-v1';
 
 self.addEventListener('install', event => self.skipWaiting());
 

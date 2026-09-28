@@ -444,6 +444,23 @@ body.mobileFight #mobileControls{display:block}
 <!-- PC TESTE 02 ALLAN BAHIA • ESCALA FIX + NUVEM ALPHA -->
 </head>
 <body>
+<style id="ck-fight-loader-style">
+#ckFightLoader{position:fixed;inset:0;z-index:2147483646;display:none;align-items:center;justify-content:center;background:#05080ef2;color:#fff;font-family:Arial,sans-serif}
+#ckFightLoader.on{display:flex}
+#ckFightLoader .box{width:min(520px,82vw);text-align:center}
+#ckFightLoader .title{font-size:clamp(24px,6vw,44px);font-weight:900;font-style:italic;letter-spacing:2px}
+#ckFightLoader .sub{margin:10px 0 16px;color:#ff8a00;font-weight:800;letter-spacing:1px}
+#ckFightLoader .track{height:16px;border:2px solid #fff;background:#151a22;overflow:hidden}
+#ckFightLoader .bar{height:100%;width:0;background:linear-gradient(90deg,#ff7a00,#ffd24a);transition:width .08s linear}
+#ckFightLoader .pct{margin-top:9px;font-size:18px;font-weight:900}
+</style>
+<div id="ckFightLoader"><div class="box">
+ <div class="title">CARICA KOMBAT</div>
+ <div class="sub">CARREGANDO LUTA...</div>
+ <div class="track"><div class="bar" id="ckFightLoadBar"></div></div>
+ <div class="pct" id="ckFightLoadPct">0%</div>
+</div></div>
+
 <div id="screen">
   <div class="smoke s1"></div><div class="smoke s2"></div><div class="flash" id="flash"></div>
   <div class="logoWrap">
@@ -780,9 +797,14 @@ function chooseStage(key){
 factoryStage.onclick=()=>{chooseStage('industrial');factoryStage.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:220})};
 butecoStage.onclick=()=>{chooseStage('buteco');butecoStage.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:220})};
 quadraStage.onclick=()=>{chooseStage('quadra');quadraStage.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:220})};
-confirmStage.onclick=()=>{stopStageSelectTimer();configureMatch();applySelectedStage();
- stageScreen.style.display='none';document.getElementById('fightScreen').style.display='block';
- currentRound=1;p1Rounds=0;p2Rounds=0;matchOver=false;roundTransition=false;roundLocked=false;busy=false;aiBusy=false;updateRoundDots();resetRound();
+confirmStage.onclick=async()=>{stopStageSelectTimer();
+ confirmStage.style.pointerEvents='none';
+ try{
+   await ckPrepareSelectedFight();
+   configureMatch();applySelectedStage();
+   stageScreen.style.display='none';document.getElementById('fightScreen').style.display='block';
+   currentRound=1;p1Rounds=0;p2Rounds=0;matchOver=false;roundTransition=false;roundLocked=false;busy=false;aiBusy=false;updateRoundDots();resetRound();
+ }finally{confirmStage.style.pointerEvents='';}
 };
 document.getElementById('backFighter').onclick=()=>{stopStageSelectTimer();stageScreen.style.display='none';openOpponentSelect();};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&stageScreen.style.display==='block'){stopStageSelectTimer();stageScreen.style.display='none';openOpponentSelect();}});
@@ -911,6 +933,45 @@ well:{name:'WELL O IMPERADOR',face:'well_assets/face.png',vs:'well_assets/vs.png
 chefao:{name:'CHEFÃO',face:'boss_assets/face.png',vs:'boss_assets/vs.png',assets:BOSS_ASSETS}
 };
 function assetsFor(img){return img===I2?P2_ASSETS:P1_ASSETS;}
+
+const ckFightImageCache=new Map();
+function ckLoadImage(src){
+ if(!src)return Promise.resolve();
+ if(ckFightImageCache.has(src))return ckFightImageCache.get(src);
+ const p=new Promise(resolve=>{
+   const im=new Image(); im.decoding='async';
+   const finish=()=>resolve();
+   im.onload=()=>{ if(im.decode)im.decode().catch(()=>{}).finally(finish); else finish(); };
+   im.onerror=finish; im.src=src;
+   if(im.complete&&im.naturalWidth){ if(im.decode)im.decode().catch(()=>{}).finally(finish); else finish(); }
+ });
+ ckFightImageCache.set(src,p); return p;
+}
+function ckStageImage(){
+ if(typeof TOWER_STAGE_BG!=='undefined'&&TOWER_STAGE_BG[selectedStage])return TOWER_STAGE_BG[selectedStage];
+ if(selectedStage==='buteco')return 'stages/buteco.png';
+ if(selectedStage==='quadra')return 'stages/quadra.png';
+ return '';
+}
+async function ckPrepareSelectedFight(){
+ const ov=document.getElementById('ckFightLoader'),bar=document.getElementById('ckFightLoadBar'),pct=document.getElementById('ckFightLoadPct');
+ if(ov)ov.classList.add('on'); if(bar)bar.style.width='0%'; if(pct)pct.textContent='0%';
+ const p1=FIGHTER_META[selectedFighter],p2=FIGHTER_META[selectedOpponent];
+ const list=[];
+ [p1&&p1.assets,p2&&p2.assets].forEach(set=>{if(set)Object.values(set).forEach(a=>{if(a&&a.src)list.push(a.src);});});
+ if(p1&&p1.vs)list.push(p1.vs); if(p2&&p2.vs)list.push(p2.vs);
+ const st=ckStageImage(); if(st)list.push(st);
+ const unique=[...new Set(list)];
+ let done=0,total=Math.max(1,unique.length);
+ async function one(src){await ckLoadImage(src);done++;let n=Math.round(done*100/total);if(bar)bar.style.width=n+'%';if(pct)pct.textContent=n+'%';}
+ let next=0;
+ async function worker(){while(next<unique.length){const i=next++;await one(unique[i]);}}
+ await Promise.all(Array.from({length:Math.min(5,Math.max(1,unique.length))},worker));
+ if(bar)bar.style.width='100%';if(pct)pct.textContent='100%';
+ await new Promise(r=>setTimeout(r,90));
+ if(ov)ov.classList.remove('on');
+}
+
 function configureMatch(){
  const p1=FIGHTER_META[selectedFighter],p2=FIGHTER_META[selectedOpponent];
  P1_ASSETS=p1.assets;P2_ASSETS=p2.assets;
@@ -2151,13 +2212,6 @@ window.addEventListener('error',()=>{
   }
 });
 
-const ALL_FIGHTER_PRELOAD=[COMBAT_ASSETS,ROBERTO_ASSETS,GIOVANNA_ASSETS,PAI_ASSETS,WILSON_ASSETS,BAHIA_ASSETS,HELBERTY_ASSETS,SUBZE_ASSETS,MICK_ASSETS,BARBARA_ASSETS];
-const globalFighterCache=[];
-ALL_FIGHTER_PRELOAD.forEach(set=>Object.values(set).forEach(a=>{
- if(!a||!a.src)return;const im=new Image();im.decoding='async';im.src=a.src;globalFighterCache.push(im);
- if(im.decode)im.decode().catch(()=>{});
-}));
-
 const butecoMusic=new Audio('audio_music/combate_de_nylon.mp3');
 butecoMusic.loop=true;butecoMusic.volume=.34;butecoMusic.preload='auto';
 const TOWER_STAGE_BG={
@@ -2359,7 +2413,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • TESTE 13.1 MOBILE-GIT • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5 MOBILE • LOADING POR LUTA • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
