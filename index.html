@@ -1002,6 +1002,7 @@ async function ckPrepareSelectedFight(){
  const list=[];
  [p1&&p1.assets,p2&&p2.assets].forEach(set=>{if(set)Object.values(set).forEach(a=>{if(a&&a.src)list.push(a.src);});});
  if(p1&&p1.vs)list.push(p1.vs); if(p2&&p2.vs)list.push(p2.vs);
+ const babyP1=(typeof BABY_ASSETS!=='undefined')?BABY_ASSETS[selectedFighter]:''; const babyP2=(typeof BABY_ASSETS!=='undefined')?BABY_ASSETS[selectedOpponent]:''; if(babyP1)list.push(babyP1); if(babyP2)list.push(babyP2);
  const st=ckStageImage(); if(st)list.push(st);
  const unique=[...new Set(list)];
  const audios=ckFightAudioUrls();
@@ -1863,7 +1864,7 @@ function loopStunUntil(endAt){
  }
  requestAnimationFrame(tick);
 }
-const BABY_ASSETS={helberty:'helberty_assets/baby.png',subze:'embedded_assets/d706be3a4920d36b32b3.png',mick:'mick_assets/baby.png',barbara:'barbara_assets/baby.png',ismael:'baby_assets/ismael.png',roberto:'baby_assets/roberto.png',giovanna:'baby_assets/giovanna.png',pai:'baby_assets/pai.png',wilson:'baby_assets/wilson.png',bahia:'baby_assets/bahia.png'};
+const BABY_ASSETS={helberty:'helberty_assets/baby.png',subze:'embedded_assets/d706be3a4920d36b32b3.png',mick:'mick_assets/baby.png',barbara:'barbara_assets/baby.png',ismael:'baby_assets/ismael.png',roberto:'baby_assets/roberto.png',giovanna:'baby_assets/giovanna.png',pai:'baby_assets/pai.png',wilson:'baby_assets/wilson.png',bahia:'baby_assets/bahia.png',socorro:'baby_assets/socorro.png',well:'baby_assets/well.png'};
 let babyCommand=[];
 function currentP2Key(){return selectedOpponent;}
 function babyAudio(file,vol=.9){try{const a=new Audio(file);a.volume=vol;a.play().catch(()=>{});return a;}catch(_e){return null;}}
@@ -2013,7 +2014,7 @@ function finisherPush(token){
    }
  }
 }
-function tryFinisher(){if(!finisherWindowOpen()||finisherTriggered)return;finisherTriggered=true;defeatState='finisher';aiBusy=true;aiBlocking=false;busy=true;blocking=false;keys.clear();const fin=document.getElementById('finishCall'),fi=document.getElementById('finisherInput');if(fin){fin.textContent='';fin.classList.remove('on')}if(fi)fi.textContent='CARICA BABY ✓';document.getElementById('combatStatus').textContent='CARICA BABY • TRANSFORMAÇÃO!';setAnim(I2,'stun',0);setAnim(I1,'victory',0);const r=F2.getBoundingClientRect(),stage=document.getElementById('fightScreen').getBoundingClientRect(),fx=document.getElementById('babyTransformFX'),tt=document.getElementById('babyTitle');if(fx){fx.style.left=(r.left-stage.left+r.width/2)+'px';fx.style.top=(r.top-stage.top+r.height/2)+'px';fx.style.display='block';void fx.offsetWidth;fx.classList.add('go')}babyAudio('carica_baby.mp3',1);setTimeout(()=>{showCaricaBabyOverlay(F2,I2,BABY_ASSETS[currentP2Key()]||((currentP2Key()==='socorro'||currentP2Key()==='well')?(P2_ASSETS.ko?.src||P2_ASSETS.idle.src):BABY_ASSETS.roberto));if(tt){tt.style.display='block';void tt.offsetWidth;tt.classList.add('go')}babyAudio('baby_crying.mp3',.72);document.getElementById('combatStatus').textContent='👶 CARICA BABY!'},520);setTimeout(()=>{sfx('victory');document.getElementById('combatStatus').textContent='CARICA BABY CONCLUÍDA!'},2200);setTimeout(()=>finishRound('p1'),3400);}
+function tryFinisher(){if(!finisherWindowOpen()||finisherTriggered)return;finisherTriggered=true;defeatState='finisher';aiBusy=true;aiBlocking=false;busy=true;blocking=false;keys.clear();const fin=document.getElementById('finishCall'),fi=document.getElementById('finisherInput');if(fin){fin.textContent='';fin.classList.remove('on')}if(fi)fi.textContent='CARICA BABY ✓';document.getElementById('combatStatus').textContent='CARICA BABY • TRANSFORMAÇÃO!';setAnim(I2,'stun',0);setAnim(I1,'victory',0);const r=F2.getBoundingClientRect(),stage=document.getElementById('fightScreen').getBoundingClientRect(),fx=document.getElementById('babyTransformFX'),tt=document.getElementById('babyTitle');if(fx){fx.style.left=(r.left-stage.left+r.width/2)+'px';fx.style.top=(r.top-stage.top+r.height/2)+'px';fx.style.display='block';void fx.offsetWidth;fx.classList.add('go')}babyAudio('carica_baby.mp3',1);setTimeout(()=>{showCaricaBabyOverlay(F2,I2,BABY_ASSETS[currentP2Key()]||BABY_ASSETS.roberto);if(tt){tt.style.display='block';void tt.offsetWidth;tt.classList.add('go')}babyAudio('baby_crying.mp3',.72);document.getElementById('combatStatus').textContent='👶 CARICA BABY!'},520);setTimeout(()=>{sfx('victory');document.getElementById('combatStatus').textContent='CARICA BABY CONCLUÍDA!'},2200);setTimeout(()=>finishRound('p1'),3400);}
 
 function aiTryBabyFinisher(){
  if(p1DefeatState!=='stun'||finisherTriggered)return false;
@@ -2462,7 +2463,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.1 • RESULTADO DA LUTA • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.2 • BABYS + ANTI-LAG • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2606,13 +2607,22 @@ color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipu
 <div id="ckTowerResult"><div class="box"><h2>VITÓRIA!</h2><div class="ckResultFight" id="ckResultFight"></div><div class="ckResultPose"><img id="ckResultPose" alt="Pose de vitória"></div><div class="ckResultGain">PONTOS DA LUTA: <b id="ckResultGain">+0000</b></div><div class="ckResultTotal">SCORE TOTAL: <span id="ckResultTotal">000000</span></div><div class="ckResultTap">TOQUE PARA CONTINUAR</div></div></div>
 <script id="ck-tower-result-script">
 let ckTowerResultLocked=false;
+function ckPreloadNextTowerFight(){
+ if(!towerActive||towerFloor+1>=TOWER_TOTAL)return;
+ const nextKey=towerOrder[towerFloor+1],meta=FIGHTER_META[nextKey],jobs=[];
+ if(meta){Object.values(meta.assets||{}).forEach(a=>{if(a&&a.src)jobs.push(ckLoadImage(a.src));});if(meta.vs)jobs.push(ckLoadImage(meta.vs));}
+ if(typeof BABY_ASSETS!=='undefined'&&BABY_ASSETS[nextKey])jobs.push(ckLoadImage(BABY_ASSETS[nextKey]));
+ const seq=['estacao','periferia','sertao','ponte','dinossauros','concha','padroeira','buteco','quadra','socorro_stage','well_stage','chefao_stage'];
+ const nextStage=seq[Math.max(0,Math.min(seq.length-1,towerFloor+1))],oldStage=selectedStage;selectedStage=nextStage;const bg=ckStageImage();selectedStage=oldStage;if(bg)jobs.push(ckLoadImage(bg));
+ Promise.allSettled(jobs).catch(()=>{});
+}
 function ckShowTowerResult(){
  const o=document.getElementById('ckTowerResult');if(!o){advanceTower();return;}stopFightTimer();stageMusicStop();
  const gain=Math.max(0,towerScore-towerFightStartScore),a=P1_ASSETS.victory||P1_ASSETS.idle,img=document.getElementById('ckResultPose');
  document.getElementById('ckResultFight').textContent=towerLabel(towerFloor+1);
  document.getElementById('ckResultGain').textContent='+'+String(gain).padStart(4,'0');document.getElementById('ckResultTotal').textContent=String(towerScore).padStart(6,'0');
  img.src=a.src;img.style.width=(a.frames*100)+'%';img.style.height='100%';img.style.objectFit='contain';img.style.objectPosition='left top';
- o.classList.add('on');ckTowerResultLocked=true;setTimeout(()=>ckTowerResultLocked=false,450);
+ o.classList.add('on');ckPreloadNextTowerFight();ckTowerResultLocked=true;setTimeout(()=>ckTowerResultLocked=false,450);
 }
 function ckCloseTowerResult(e){if(ckTowerResultLocked||!document.getElementById('ckTowerResult')?.classList.contains('on'))return;if(e){e.preventDefault();e.stopPropagation();}document.getElementById('ckTowerResult').classList.remove('on');advanceTower();}
 document.getElementById('ckTowerResult')?.addEventListener('pointerdown',ckCloseTowerResult,{passive:false});
