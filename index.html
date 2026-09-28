@@ -2413,7 +2413,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.3 MOBILE • TROCAR P1 FIX • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.4 MOBILE • NOVO TOQUE P1 • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2490,9 +2490,21 @@ color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipu
    if(typeof continueActive!=='undefined'&&continueActive && typeof acceptContinue==='function')acceptContinue();
    sync();
  },{passive:false});
+ let ckBlockSelectTouch=false;
  bChange.addEventListener('pointerdown',e=>{
    stop(e);
    if(typeof continueActive==='undefined'||!continueActive)return;
+   ckBlockSelectTouch=true;
+   const releaseId=e.pointerId;
+   const release=(ev)=>{
+     if(ev.pointerId!==releaseId)return;
+     ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation?.();
+     window.removeEventListener('pointerup',release,true);
+     window.removeEventListener('pointercancel',release,true);
+     setTimeout(()=>{ckBlockSelectTouch=false;},80);
+   };
+   window.addEventListener('pointerup',release,true);
+   window.addEventListener('pointercancel',release,true);
    if(typeof closeContinueScreen==='function')closeContinueScreen();
    if(typeof restoreContinueVisuals==='function')restoreContinueVisuals();
    continueShown=false; matchOver=false; roundTransition=false; roundLocked=false; busy=false; aiBusy=false;
@@ -2517,6 +2529,22 @@ color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipu
    sync();
  },{passive:false});
  setInterval(sync,150); addEventListener('resize',sync); sync();
+ document.addEventListener('pointerdown',function(e){
+   if(ckBlockSelectTouch){
+     const sel=document.getElementById('selectScreen');
+     if(sel && sel.style.display!=='none'){
+       e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+     }
+   }
+ },true);
+ document.addEventListener('click',function(e){
+   if(ckBlockSelectTouch){
+     const sel=document.getElementById('selectScreen');
+     if(sel && sel.style.display!=='none'){
+       e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+     }
+   }
+ },true);
 })();
 </script>
 
