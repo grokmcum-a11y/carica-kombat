@@ -2459,5 +2459,52 @@ window.addEventListener('keydown',function(e){
   boot();
 })();
 </script>
+
+<style id="ck-final-touch-style">
+#ckFinalTouch{
+ position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);z-index:2147483646;display:none;
+ min-width:210px;padding:15px 26px;border:2px solid #fff;border-radius:12px;
+ background:rgba(8,12,20,.92);color:#fff;font:900 18px Arial,sans-serif;
+ letter-spacing:1.5px;text-align:center;box-shadow:0 0 22px rgba(55,145,255,.55);
+ touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+#ckFinalTouch.on{display:block}
+#ckFinalTouch:active{transform:translateX(-50%) scale(.96)}
+@media (pointer:fine) and (min-width:901px){#ckFinalTouch{display:none!important}}
+</style>
+<div id="ckFinalTouch" role="button" aria-label="Continuar" tabindex="0">CONTINUAR</div>
+<script id="ck-final-touch-script">
+(()=>{
+ const b=document.getElementById('ckFinalTouch');
+ const coarse=()=>matchMedia('(pointer:coarse)').matches||innerWidth<=900;
+ function sync(){
+   const sc=document.getElementById('continueScreen');
+   const active=!!(sc&&(continueActive||sc.classList.contains('on'))&&sc.style.display!=='none');
+   b.classList.toggle('on',coarse()&&active);
+   if(active){
+     const over=document.getElementById('continueGameOver');
+     b.textContent=(over&&over.classList.contains('on'))?'MENU':'CONTINUAR';
+   }
+ }
+ function press(e){
+   e.preventDefault();e.stopPropagation();
+   const over=document.getElementById('continueGameOver');
+   if(over&&over.classList.contains('on')){ if(typeof returnAfterGameOver==='function')returnAfterGameOver(); }
+   else if(typeof acceptContinue==='function'&&continueActive){ acceptContinue(); }
+   setTimeout(sync,30);
+ }
+ b.addEventListener('pointerdown',press,{passive:false});
+ b.addEventListener('click',e=>e.preventDefault());
+ b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){press(e)}});
+ const sc=document.getElementById('continueScreen');
+ if(sc)new MutationObserver(sync).observe(sc,{attributes:true,attributeFilter:['style','class'],subtree:true});
+ const go=document.getElementById('continueGameOver');
+ if(go)new MutationObserver(sync).observe(go,{attributes:true,attributeFilter:['class']});
+ addEventListener('resize',sync);addEventListener('orientationchange',()=>setTimeout(sync,100));
+ setInterval(sync,250);sync();
+})();
+</script>
+
 </body>
 </html>
