@@ -2413,7 +2413,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.2 MOBILE • CONTINUE TOUCH • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.3 MOBILE • TROCAR P1 FIX • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2504,10 +2504,16 @@ color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipu
    if(fight)fight.style.display='none';
    if(stage)stage.style.display='none';
    if(select)select.style.display='block';
-   // volta a seleção no passo P1, preservando modo/roster já carregados
-   if(typeof selectStep!=='undefined')selectStep=1;
-   if(typeof renderSelect==='function')renderSelect();
-   if(typeof paintSelect==='function')paintSelect();
+   // volta à seleção REAL no passo P1. Não confirma nem escolhe P2 automaticamente.
+   selectedOpponent='';
+   if(typeof v2Phase!=='undefined')v2Phase='p1';
+   if(typeof v2Cursor!=='undefined'){
+     const cur=(typeof NORMAL_KEYS!=='undefined')?NORMAL_KEYS.indexOf(selectedFighter):-1;
+     v2Cursor=cur>=0?cur:0;
+   }
+   if(typeof v2Paint==='function')v2Paint();
+   // limpa qualquer toque/tecla que tenha sobrado da tela CONTINUE
+   try{keys.clear();}catch(_e){}
    sync();
  },{passive:false});
  setInterval(sync,150); addEventListener('resize',sync); sync();
