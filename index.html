@@ -874,8 +874,8 @@ const WILSON_ASSETS={"idle":{"src":"wilson_assets/idle.png","frames":4},"walk":{
 const BAHIA_ASSETS={"idle":{"src":"bahia_assets/idle.png","frames":4},"walk":{"src":"bahia_assets/walk.png","frames":6},"punch":{"src":"bahia_assets/punch.png","frames":3},"kick":{"src":"bahia_assets/kick.png","frames":3},"jump":{"src":"bahia_assets/jump.png","frames":3},"block":{"src":"bahia_assets/block.png","frames":1},"damage":{"src":"bahia_assets/damage.png","frames":3},"special":{"src":"bahia_assets/special.png","frames":5},"stun":{"src":"bahia_assets/stun.png","frames":4},"fall":{"src":"bahia_assets/fall.png","frames":4},"ko":{"src":"bahia_assets/ko.png","frames":1},"victory":{"src":"bahia_assets/victory.png","frames":1},"caricality":{"src":"bahia_assets/caricality.png","frames":5}};
 let gameMode='fight';
 let towerActive=false,towerFloor=0,towerOrder=[];
-let towerScore=0,towerPerfects=0,towerCaricalities=0,towerContinues=0,towerRoundScored=false;
-function towerScorePaint(){const h=document.getElementById('towerScoreHud'),t=document.getElementById('towerScoreText');if(h)h.style.display=towerActive?'block':'none';if(t)t.textContent=String(Math.max(0,Math.round(towerScore))).padStart(6,'0');}
+let towerScore=0,towerPerfects=0,towerCaricalities=0,towerContinues=0,towerRoundScored=false,towerFightStartScore=0;
+function towerScorePaint(){const h=document.getElementById('towerScoreHud'),t=document.getElementById('towerScoreText');if(h)h.style.display='none';if(t)t.textContent=String(Math.max(0,Math.round(towerScore))).padStart(6,'0');}
 function towerAddScore(n){if(!towerActive)return;towerScore+=Math.max(0,Math.round(n||0));towerScorePaint();}
 function towerResetScore(){towerScore=0;towerPerfects=0;towerCaricalities=0;towerContinues=0;towerRoundScored=false;towerScorePaint();}
 function ckHallRows(){try{return JSON.parse(localStorage.getItem('caricaHallV1')||'[]')}catch(_e){return[]}}
@@ -909,7 +909,7 @@ function playSocorroTowerIntro(done){
  setTimeout(finish,11500);
 }
 function startTowerFight(showCard=true){
- selectedOpponent=towerOrder[towerFloor];selectedStage=towerStageForFloor();configureMatch();applySelectedStage();paintTowerHud();
+ towerFightStartScore=towerScore;selectedOpponent=towerOrder[towerFloor];selectedStage=towerStageForFloor();configureMatch();applySelectedStage();paintTowerHud();
  const go=()=>{document.getElementById('selectScreen').style.display='none';document.getElementById('stageScreen').style.display='none';document.getElementById('fightScreen').style.display='block';currentRound=1;p1Rounds=0;p2Rounds=0;matchOver=false;roundTransition=false;roundLocked=false;busy=false;aiBusy=false;continueShown=false;updateRoundDots();resetRound();};
  if(showCard){const afterIntro=()=>showTowerTransition(go);if(towerFloor===9)playSocorroTowerIntro(afterIntro);else afterIntro();}else go();
 }
@@ -1180,7 +1180,7 @@ function finishRound(winner){ stopFightTimer();if(roundTransition||matchOver)ret
      document.getElementById('combatStatus').textContent=(p1Rounds>=2?'P1':'P2')+' • CAMPEÃO DA PARTIDA';if(p1Rounds>=2)announcer('voce_venceu',.98);else announcer('voce_perdeu',.98);
      if(towerActive && p1Rounds>=2){
        towerAddScore(1000 + Math.max(0,fightSeconds)*10);
-       setTimeout(()=>advanceTower(),900);
+       setTimeout(()=>ckShowTowerResult(),700);
        return;
      }
      const loserKey=(p1Rounds>=2)?selectedOpponent:selectedFighter;
@@ -2013,7 +2013,7 @@ function finisherPush(token){
    }
  }
 }
-function tryFinisher(){if(!finisherWindowOpen()||finisherTriggered)return;finisherTriggered=true;defeatState='finisher';aiBusy=true;aiBlocking=false;busy=true;blocking=false;keys.clear();const fin=document.getElementById('finishCall'),fi=document.getElementById('finisherInput');if(fin){fin.textContent='';fin.classList.remove('on')}if(fi)fi.textContent='CARICA BABY ✓';document.getElementById('combatStatus').textContent='CARICA BABY • TRANSFORMAÇÃO!';setAnim(I2,'stun',0);setAnim(I1,'victory',0);const r=F2.getBoundingClientRect(),stage=document.getElementById('fightScreen').getBoundingClientRect(),fx=document.getElementById('babyTransformFX'),tt=document.getElementById('babyTitle');if(fx){fx.style.left=(r.left-stage.left+r.width/2)+'px';fx.style.top=(r.top-stage.top+r.height/2)+'px';fx.style.display='block';void fx.offsetWidth;fx.classList.add('go')}babyAudio('carica_baby.mp3',1);setTimeout(()=>{showCaricaBabyOverlay(F2,I2,BABY_ASSETS[currentP2Key()]||BABY_ASSETS.roberto);if(tt){tt.style.display='block';void tt.offsetWidth;tt.classList.add('go')}babyAudio('baby_crying.mp3',.72);document.getElementById('combatStatus').textContent='👶 CARICA BABY!'},520);setTimeout(()=>{sfx('victory');document.getElementById('combatStatus').textContent='CARICA BABY CONCLUÍDA!'},2200);setTimeout(()=>finishRound('p1'),3400);}
+function tryFinisher(){if(!finisherWindowOpen()||finisherTriggered)return;finisherTriggered=true;defeatState='finisher';aiBusy=true;aiBlocking=false;busy=true;blocking=false;keys.clear();const fin=document.getElementById('finishCall'),fi=document.getElementById('finisherInput');if(fin){fin.textContent='';fin.classList.remove('on')}if(fi)fi.textContent='CARICA BABY ✓';document.getElementById('combatStatus').textContent='CARICA BABY • TRANSFORMAÇÃO!';setAnim(I2,'stun',0);setAnim(I1,'victory',0);const r=F2.getBoundingClientRect(),stage=document.getElementById('fightScreen').getBoundingClientRect(),fx=document.getElementById('babyTransformFX'),tt=document.getElementById('babyTitle');if(fx){fx.style.left=(r.left-stage.left+r.width/2)+'px';fx.style.top=(r.top-stage.top+r.height/2)+'px';fx.style.display='block';void fx.offsetWidth;fx.classList.add('go')}babyAudio('carica_baby.mp3',1);setTimeout(()=>{showCaricaBabyOverlay(F2,I2,BABY_ASSETS[currentP2Key()]||((currentP2Key()==='socorro'||currentP2Key()==='well')?(P2_ASSETS.ko?.src||P2_ASSETS.idle.src):BABY_ASSETS.roberto));if(tt){tt.style.display='block';void tt.offsetWidth;tt.classList.add('go')}babyAudio('baby_crying.mp3',.72);document.getElementById('combatStatus').textContent='👶 CARICA BABY!'},520);setTimeout(()=>{sfx('victory');document.getElementById('combatStatus').textContent='CARICA BABY CONCLUÍDA!'},2200);setTimeout(()=>finishRound('p1'),3400);}
 
 function aiTryBabyFinisher(){
  if(p1DefeatState!=='stun'||finisherTriggered)return false;
@@ -2462,7 +2462,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.0 • SCORE + HALL DA FAMA • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.1 • RESULTADO DA LUTA • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2598,6 +2598,26 @@ color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipu
 </script>
 
 
+<style id="ck-tower-result-style">
+#ckTowerResult{position:fixed;inset:0;z-index:2147483600;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 42%,rgba(78,35,5,.34),rgba(0,0,0,.94) 62%);color:#fff;font-family:Arial,sans-serif}
+#ckTowerResult.on{display:flex}#ckTowerResult .box{width:min(92vw,760px);min-height:min(82vh,620px);border:2px solid #ff7a00;background:linear-gradient(180deg,rgba(15,18,23,.98),rgba(5,7,10,.98));box-shadow:0 0 34px rgba(255,112,0,.24);text-align:center;padding:18px 22px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#ckTowerResult h2{margin:0;color:#ff7a00;font-size:clamp(28px,5vw,54px);letter-spacing:4px}.ckResultFight{letter-spacing:3px;color:#aaa;font-weight:800;margin:5px 0 8px}.ckResultPose{height:min(38vh,300px);width:min(68vw,430px);overflow:hidden;position:relative;margin:2px auto 8px}.ckResultPose img{height:100%;max-width:none;position:absolute;left:50%;top:0;transform:translateX(-50%);object-fit:contain}.ckResultGain{font-size:clamp(20px,4vw,32px);font-weight:900}.ckResultGain b{color:#ff8a00}.ckResultTotal{margin-top:7px;padding-top:8px;border-top:1px solid #60401f;font-size:clamp(26px,5vw,44px);font-weight:1000}.ckResultTotal span{color:#ff8a00}.ckResultTap{margin-top:13px;color:#bbb;font-weight:800;letter-spacing:2px;animation:ckBlink 1s steps(2,end) infinite}@keyframes ckBlink{50%{opacity:.35}}
+</style>
+<div id="ckTowerResult"><div class="box"><h2>VITÓRIA!</h2><div class="ckResultFight" id="ckResultFight"></div><div class="ckResultPose"><img id="ckResultPose" alt="Pose de vitória"></div><div class="ckResultGain">PONTOS DA LUTA: <b id="ckResultGain">+0000</b></div><div class="ckResultTotal">SCORE TOTAL: <span id="ckResultTotal">000000</span></div><div class="ckResultTap">TOQUE PARA CONTINUAR</div></div></div>
+<script id="ck-tower-result-script">
+let ckTowerResultLocked=false;
+function ckShowTowerResult(){
+ const o=document.getElementById('ckTowerResult');if(!o){advanceTower();return;}stopFightTimer();stageMusicStop();
+ const gain=Math.max(0,towerScore-towerFightStartScore),a=P1_ASSETS.victory||P1_ASSETS.idle,img=document.getElementById('ckResultPose');
+ document.getElementById('ckResultFight').textContent=towerLabel(towerFloor+1);
+ document.getElementById('ckResultGain').textContent='+'+String(gain).padStart(4,'0');document.getElementById('ckResultTotal').textContent=String(towerScore).padStart(6,'0');
+ img.src=a.src;img.style.width=(a.frames*100)+'%';img.style.height='100%';img.style.objectFit='contain';img.style.objectPosition='left top';
+ o.classList.add('on');ckTowerResultLocked=true;setTimeout(()=>ckTowerResultLocked=false,450);
+}
+function ckCloseTowerResult(e){if(ckTowerResultLocked||!document.getElementById('ckTowerResult')?.classList.contains('on'))return;if(e){e.preventDefault();e.stopPropagation();}document.getElementById('ckTowerResult').classList.remove('on');advanceTower();}
+document.getElementById('ckTowerResult')?.addEventListener('pointerdown',ckCloseTowerResult,{passive:false});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&document.getElementById('ckTowerResult')?.classList.contains('on'))ckCloseTowerResult(e);});
+</script>
 <div id="ckHall"><div class="panel"><h2>HALL DA FAMA</h2><div>TORRE CONCLUÍDA</div><div class="score" id="ckHallScore">000000</div><div id="ckHallStats"></div><p><input id="ckHallName" maxlength="12" placeholder="SEU NOME" autocomplete="off"></p><button id="ckHallSave">SALVAR NO RANKING</button><button id="ckHallClose">FECHAR</button><ol id="ckHallList"></ol></div></div>
 <script id="ck-hall-script">
 document.getElementById('ckHallSave')?.addEventListener('click',ckSaveHall);
