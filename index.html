@@ -2377,7 +2377,7 @@ function markP2SpecialCooldown(){p2SpecialCooldownUntil=performance.now()+SPECIA
 function universalForwardKey(){return p1Center()<p2Center()?'d':'a';}
 function universalSpecialPush(k){
  const now=performance.now();
- universalSpecialBuffer=universalSpecialBuffer.filter(x=>now-x.t<760);
+ universalSpecialBuffer=universalSpecialBuffer.filter(x=>now-x.t<1600);
  if(k===universalForwardKey()) universalSpecialBuffer.push({k:'f',t:now});
  else if(k==='j') universalSpecialBuffer.push({k:'j',t:now});
  else if(k==='a'||k==='d') universalSpecialBuffer=[];
@@ -2399,7 +2399,7 @@ function universalSpecialPush(k){
  return false;
 }
 window.addEventListener('keydown',function(e){
- if(universalSpecialSynthetic)return;
+ if(universalSpecialSynthetic||e.ckTouch)return;
  const k=(e.key||'').toLowerCase();
  // E físico deixa de ser atalho de especial.
  if(k==='e'&&document.getElementById('fightScreen').style.display==='block'){
@@ -2413,7 +2413,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5 MOBILE • LOADING POR LUTA • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.1 MOBILE • TOUCH ESPECIAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2433,10 +2433,25 @@ window.addEventListener('keydown',function(e){
  new MutationObserver(sync).observe(fight,{attributes:true,attributeFilter:['style','class']});
  addEventListener('resize',sync);addEventListener('orientationchange',()=>setTimeout(sync,120));sync();
  const held=new Map();
- function fire(type,key){window.dispatchEvent(new KeyboardEvent(type,{key:key,code:'Key'+key.toUpperCase(),bubbles:true,cancelable:true}));}
+ function fire(type,key){
+   const ev=new KeyboardEvent(type,{key:key,code:'Key'+key.toUpperCase(),bubbles:true,cancelable:true});
+   Object.defineProperty(ev,'ckTouch',{value:true});
+   window.dispatchEvent(ev);
+ }
  controls.querySelectorAll('[data-key]').forEach(btn=>{
    const key=btn.dataset.key;
-   const down=e=>{e.preventDefault();if(held.has(e.pointerId))return;btn.setPointerCapture?.(e.pointerId);held.set(e.pointerId,{btn,key});btn.classList.add('pressed');fire('keydown',key);};
+   const down=e=>{
+     e.preventDefault();if(held.has(e.pointerId))return;
+     btn.setPointerCapture?.(e.pointerId);held.set(e.pointerId,{btn,key});btn.classList.add('pressed');
+     // Touch usa o mesmo combo universal, mas sem depender do KeyboardEvent virtual.
+     if(['a','d','j'].includes(key) && typeof universalSpecialPush==='function'){
+       if(universalSpecialPush(key)){
+         const c=document.getElementById('centerCall');
+         if(c){c.textContent='ESPECIAL!';c.className='centerCall show';setTimeout(()=>c.classList.remove('show'),330);}
+       }
+     }
+     fire('keydown',key);
+   };
    const up=e=>{e.preventDefault();const h=held.get(e.pointerId);if(!h)return;fire('keyup',h.key);h.btn.classList.remove('pressed');held.delete(e.pointerId);};
    btn.addEventListener('pointerdown',down,{passive:false});btn.addEventListener('pointerup',up,{passive:false});btn.addEventListener('pointercancel',up,{passive:false});btn.addEventListener('contextmenu',e=>e.preventDefault());
  });
