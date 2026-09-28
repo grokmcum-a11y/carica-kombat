@@ -2413,7 +2413,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.1 MOBILE • TOUCH ESPECIAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • FIX 04.5.2 MOBILE • CONTINUE TOUCH • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2462,5 +2462,57 @@ window.addEventListener('keydown',function(e){
  if('serviceWorker' in navigator && location.protocol!=='file:') addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 })();
 </script>
+
+<style id="ck-continue-touch-style">
+#ckContinueTouch{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);
+z-index:2147483647;display:none;gap:14px;align-items:center;justify-content:center}
+#ckContinueTouch.on{display:flex}
+#ckContinueTouch button{min-width:150px;padding:15px 18px;border:2px solid #fff;border-radius:12px;background:rgba(8,12,20,.94);
+color:#fff;font:900 16px Arial,sans-serif;letter-spacing:1px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#ckContinueTouch button:first-child{border-color:#ff8a00}
+#ckContinueTouch button:active{transform:scale(.96)}
+@media(pointer:fine) and (min-width:901px){#ckContinueTouch{display:none!important}}
+</style>
+<div id="ckContinueTouch">
+ <button id="ckTouchContinue" type="button">CONTINUAR</button>
+ <button id="ckTouchChangeP1" type="button">TROCAR P1</button>
+</div>
+<script id="ck-continue-touch-script">
+(()=>{
+ const box=document.getElementById('ckContinueTouch');
+ const bContinue=document.getElementById('ckTouchContinue');
+ const bChange=document.getElementById('ckTouchChangeP1');
+ const mobile=()=>matchMedia('(pointer:coarse)').matches||innerWidth<=900;
+ function sync(){box.classList.toggle('on',mobile()&&typeof continueActive!=='undefined'&&continueActive);}
+ function stop(e){e.preventDefault();e.stopPropagation();}
+ bContinue.addEventListener('pointerdown',e=>{
+   stop(e);
+   if(typeof continueActive!=='undefined'&&continueActive && typeof acceptContinue==='function')acceptContinue();
+   sync();
+ },{passive:false});
+ bChange.addEventListener('pointerdown',e=>{
+   stop(e);
+   if(typeof continueActive==='undefined'||!continueActive)return;
+   if(typeof closeContinueScreen==='function')closeContinueScreen();
+   if(typeof restoreContinueVisuals==='function')restoreContinueVisuals();
+   continueShown=false; matchOver=false; roundTransition=false; roundLocked=false; busy=false; aiBusy=false;
+   p1Rounds=0;p2Rounds=0;currentRound=1;
+   if(typeof updateRoundDots==='function')updateRoundDots();
+   const fight=document.getElementById('fightScreen');
+   const stage=document.getElementById('stageSelect');
+   const select=document.getElementById('selectScreen');
+   if(fight)fight.style.display='none';
+   if(stage)stage.style.display='none';
+   if(select)select.style.display='block';
+   // volta a seleção no passo P1, preservando modo/roster já carregados
+   if(typeof selectStep!=='undefined')selectStep=1;
+   if(typeof renderSelect==='function')renderSelect();
+   if(typeof paintSelect==='function')paintSelect();
+   sync();
+ },{passive:false});
+ setInterval(sync,150); addEventListener('resize',sync); sync();
+})();
+</script>
+
 </body>
 </html>
