@@ -444,12 +444,17 @@ body.mobileFight #mobileControls{display:block}
 /* V05.4.2 — ANTI-PICOTE 2: compositor hints, sem alterar escala/posição */
 #p1,#p2,#p1img,#p2img,#impactBurst,#ckPacocaEgg{will-change:transform,opacity}
 #fightScreen{contain:layout paint style}
-/* V05.4 — Easter egg VAI PAÇOCA */
-#ckPacocaEgg{position:absolute;right:0;bottom:0;z-index:88;width:min(27vw,330px);height:min(64vh,480px);pointer-events:none;overflow:hidden;opacity:0;transform:translateX(112%);transition:none;filter:drop-shadow(-8px 6px 8px rgba(0,0,0,.65));}
-#ckPacocaEgg img{position:absolute;right:-2%;bottom:-2%;height:100%;width:auto;max-width:none;}
-#ckPacocaEgg.go{animation:ckPacocaPop 1.18s cubic-bezier(.2,.85,.25,1) forwards;}
-@keyframes ckPacocaPop{0%{opacity:0;transform:translateX(112%)}16%{opacity:1;transform:translateX(4%)}24%{transform:translateX(0)}72%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(112%)}}
-@media(max-width:700px){#ckPacocaEgg{width:min(31vw,250px);height:min(58vh,390px)}}
+/* V05.5 — SEU PEDRO PAÇOCA: 3 poses leves + movimento por CSS */
+#ckPacocaEgg{position:absolute;left:50%;bottom:0;z-index:88;width:min(42vw,520px);height:min(68vh,520px);pointer-events:none;overflow:visible;opacity:0;transform:translate(-50%,105%);filter:drop-shadow(0 8px 10px rgba(0,0,0,.68));will-change:transform,opacity;}
+#ckPacocaEgg img{position:absolute;left:50%;bottom:-2px;max-width:100%;max-height:100%;width:auto;height:auto;transform:translateX(-50%);opacity:0;will-change:opacity,transform;}
+#ckPacocaEgg .p1{max-height:35%;bottom:0} #ckPacocaEgg .p2{max-height:72%;bottom:0} #ckPacocaEgg .p3{max-height:96%;bottom:-1%}
+#ckPacocaEgg.go{animation:ckPedroRise 1.78s cubic-bezier(.2,.82,.22,1) forwards;}
+#ckPacocaEgg.go .p1{animation:ckPedroP1 1.78s linear forwards} #ckPacocaEgg.go .p2{animation:ckPedroP2 1.78s linear forwards} #ckPacocaEgg.go .p3{animation:ckPedroP3 1.78s linear forwards}
+@keyframes ckPedroRise{0%{opacity:0;transform:translate(-50%,105%)}7%{opacity:1;transform:translate(-50%,73%)}20%{transform:translate(-50%,43%)}34%,76%{opacity:1;transform:translate(-50%,0)}90%{opacity:1;transform:translate(-50%,58%)}100%{opacity:0;transform:translate(-50%,108%)}}
+@keyframes ckPedroP1{0%,6%{opacity:0}7%,19%{opacity:1}20%,100%{opacity:0}}
+@keyframes ckPedroP2{0%,19%{opacity:0}20%,41%{opacity:1}42%,100%{opacity:0}}
+@keyframes ckPedroP3{0%,41%{opacity:0}42%,78%{opacity:1}79%,100%{opacity:0}}
+@media(max-width:700px){#ckPacocaEgg{width:min(50vw,390px);height:min(64vh,430px)}}
 </style>
 <!-- PC TESTE 02 ALLAN BAHIA • ESCALA FIX + NUVEM ALPHA -->
 
@@ -650,7 +655,7 @@ body.mobileFight #mobileControls{display:block}
 
 </style>
 <div id="ismaelEnergyBall"></div><div id="ismaelElectricImpact"></div>
-<div id="ckPacocaEgg" aria-hidden="true"><img src="easter_assets/vai_pacoca.png" alt=""></div><div id="babyTransformFX"></div><div id="babyTitle" aria-label="CARICA BABY!"><span>C</span><span>A</span><span>R</span><span>I</span><span>C</span><span>A</span><span class="gap">&nbsp;</span><span>B</span><span>A</span><span>B</span><span>Y</span><span>!</span></div><div id="wilsonTornado"><div class="funnel"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i><i class="ring r5"></i><i class="wind w1"></i><i class="wind w2"></i><i class="wind w3"></i><i class="dust"></i></div></div><div id="bahiaBomb"><i class="spark"></i></div>
+<div id="ckPacocaEgg" aria-hidden="true"><img class="p1" src="easter_assets/vai_pacoca_1.png" alt=""><img class="p2" src="easter_assets/vai_pacoca_2.png" alt=""><img class="p3" src="easter_assets/vai_pacoca_3.png" alt=""></div><div id="babyTransformFX"></div><div id="babyTitle" aria-label="CARICA BABY!"><span>C</span><span>A</span><span>R</span><span>I</span><span>C</span><span>A</span><span class="gap">&nbsp;</span><span>B</span><span>A</span><span>B</span><span>Y</span><span>!</span></div><div id="wilsonTornado"><div class="funnel"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i><i class="ring r5"></i><i class="wind w1"></i><i class="wind w2"></i><i class="wind w3"></i><i class="dust"></i></div></div><div id="bahiaBomb"><i class="spark"></i></div>
 <script>
 
 
@@ -1064,7 +1069,7 @@ async function ckPrepareSelectedFight(){
 
 // V05.4 — Easter egg “VAI PAÇOCA?”
 let ckPacocaUsed=false,ckPacocaShowing=false;
-const ckPacocaImgPreload=new Image();ckPacocaImgPreload.decoding='async';ckPacocaImgPreload.src='easter_assets/vai_pacoca.png';if(ckPacocaImgPreload.decode)ckPacocaImgPreload.decode().catch(()=>{});
+const ckPacocaImgs=['easter_assets/vai_pacoca_1.png','easter_assets/vai_pacoca_2.png','easter_assets/vai_pacoca_3.png'].map(src=>{const im=new Image();im.decoding='async';im.src=src;if(im.decode)im.decode().catch(()=>{});return im;});
 const ckPacocaAudio=new Audio('easter_assets/vai_pacoca.mp3');ckPacocaAudio.preload='auto';try{ckPacocaAudio.load();}catch(_e){}
 function ckMaybePacoca(){
  if(ckPacocaUsed||ckPacocaShowing||Math.random()>=.08)return;
@@ -1074,8 +1079,8 @@ function ckMaybePacoca(){
  ckPacocaUsed=true;ckPacocaShowing=true;
  const el=document.getElementById('ckPacocaEgg');if(!el){ckPacocaShowing=false;return;}
  el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
- try{ckPacocaAudio.pause();ckPacocaAudio.currentTime=0;ckPacocaAudio.volume=.98*masterVolume;ckPacocaAudio.play().catch(()=>{});}catch(_e){}
- setTimeout(()=>{el.classList.remove('go');ckPacocaShowing=false;},1220);
+ setTimeout(()=>{if(!ckPacocaShowing)return;try{ckPacocaAudio.pause();ckPacocaAudio.currentTime=0;ckPacocaAudio.volume=.98*masterVolume;ckPacocaAudio.play().catch(()=>{});}catch(_e){}},740);
+ setTimeout(()=>{el.classList.remove('go');ckPacocaShowing=false;},1820);
 }
 
 function configureMatch(){
@@ -2476,7 +2481,7 @@ aiThink=function(now){
 // FRENTE → FRENTE → SOCO. "Frente" é relativo à posição do adversário.
 let SPECIAL_COOLDOWN_MS=2000;
 let towerDifficulty='normal';
-function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V05.4.2 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
+function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V05.5 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
 function startTowerAfterDifficulty(){
  const d=document.getElementById('ckDifficulty');if(d){d.classList.remove('on');d.setAttribute('aria-hidden','true');}
  gameMode='tower';towerActive=false;towerFloor=0;towerOrder=[];menu.style.display='none';document.getElementById('selectScreen').style.display='block';announcer('select_fighter',.94);
@@ -2533,7 +2538,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.4.2 • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.5 • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
