@@ -440,6 +440,13 @@ body.mobileFight #mobileControls{display:block}
 @media (pointer:coarse),(max-width:900px){body{overscroll-behavior:none}button{min-height:48px}.selectTip{display:none}}
 @media (orientation:portrait) and (max-width:900px){#rotateHint{display:flex}}
 @media (max-height:500px){.mpad{width:158px;height:158px}.mpad .mbtn{width:54px;height:54px}.mup{left:52px}.mleft{top:52px}.mdown{left:52px;top:104px}.mright{left:104px;top:52px}.mactions{width:168px;height:128px}.mactions .mbtn{width:68px;height:68px}.mpunch{right:68px}.mkick{bottom:50px}}
+
+/* V05.4 — Easter egg VAI PAÇOCA */
+#ckPacocaEgg{position:absolute;right:0;bottom:0;z-index:88;width:min(27vw,330px);height:min(64vh,480px);pointer-events:none;overflow:hidden;opacity:0;transform:translateX(112%);transition:none;filter:drop-shadow(-8px 6px 8px rgba(0,0,0,.65));}
+#ckPacocaEgg img{position:absolute;right:-2%;bottom:-2%;height:100%;width:auto;max-width:none;}
+#ckPacocaEgg.go{animation:ckPacocaPop 1.18s cubic-bezier(.2,.85,.25,1) forwards;}
+@keyframes ckPacocaPop{0%{opacity:0;transform:translateX(112%)}16%{opacity:1;transform:translateX(4%)}24%{transform:translateX(0)}72%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(112%)}}
+@media(max-width:700px){#ckPacocaEgg{width:min(31vw,250px);height:min(58vh,390px)}}
 </style>
 <!-- PC TESTE 02 ALLAN BAHIA • ESCALA FIX + NUVEM ALPHA -->
 
@@ -640,7 +647,7 @@ body.mobileFight #mobileControls{display:block}
 
 </style>
 <div id="ismaelEnergyBall"></div><div id="ismaelElectricImpact"></div>
-<div id="babyTransformFX"></div><div id="babyTitle" aria-label="CARICA BABY!"><span>C</span><span>A</span><span>R</span><span>I</span><span>C</span><span>A</span><span class="gap">&nbsp;</span><span>B</span><span>A</span><span>B</span><span>Y</span><span>!</span></div><div id="wilsonTornado"><div class="funnel"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i><i class="ring r5"></i><i class="wind w1"></i><i class="wind w2"></i><i class="wind w3"></i><i class="dust"></i></div></div><div id="bahiaBomb"><i class="spark"></i></div>
+<div id="ckPacocaEgg" aria-hidden="true"><img src="easter_assets/vai_pacoca.png" alt=""></div><div id="babyTransformFX"></div><div id="babyTitle" aria-label="CARICA BABY!"><span>C</span><span>A</span><span>R</span><span>I</span><span>C</span><span>A</span><span class="gap">&nbsp;</span><span>B</span><span>A</span><span>B</span><span>Y</span><span>!</span></div><div id="wilsonTornado"><div class="funnel"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i><i class="ring r5"></i><i class="wind w1"></i><i class="wind w2"></i><i class="wind w3"></i><i class="dust"></i></div></div><div id="bahiaBomb"><i class="spark"></i></div>
 <script>
 
 
@@ -1044,7 +1051,25 @@ async function ckPrepareSelectedFight(){
  if(ov)ov.classList.remove('on');
 }
 
+
+// V05.4 — Easter egg “VAI PAÇOCA?”
+let ckPacocaUsed=false,ckPacocaShowing=false;
+const ckPacocaImgPreload=new Image();ckPacocaImgPreload.src='easter_assets/vai_pacoca.png';
+try{const ckPacocaAudioPreload=new Audio('easter_assets/vai_pacoca.mp3');ckPacocaAudioPreload.preload='auto';ckPacocaAudioPreload.load();}catch(_e){}
+function ckMaybePacoca(){
+ if(ckPacocaUsed||ckPacocaShowing||Math.random()>=.08)return;
+ if(matchOver||roundLocked||roundTransition||hp2<=0||p1DefeatState!=='fight')return;
+ const fight=document.getElementById('fightScreen');if(!fight||fight.style.display!=='block')return;
+ if(document.querySelector('.caricaBabyOverlay')||document.getElementById('babyTitle')?.classList.contains('go'))return;
+ ckPacocaUsed=true;ckPacocaShowing=true;
+ const el=document.getElementById('ckPacocaEgg');if(!el){ckPacocaShowing=false;return;}
+ el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
+ try{const a=new Audio('easter_assets/vai_pacoca.mp3');a.volume=.98;a.play().catch(()=>{});}catch(_e){}
+ setTimeout(()=>{el.classList.remove('go');ckPacocaShowing=false;},1220);
+}
+
 function configureMatch(){
+ ckPacocaUsed=false;ckPacocaShowing=false;const _pe=document.getElementById('ckPacocaEgg');if(_pe)_pe.classList.remove('go');
  const p1=FIGHTER_META[selectedFighter],p2=FIGHTER_META[selectedOpponent];
  P1_ASSETS=p1.assets;P2_ASSETS=p2.assets;
  document.getElementById('p1Name').textContent=p1.name;document.getElementById('p2Name').textContent=p2.name;
@@ -1303,7 +1328,7 @@ function paiGroundExplosion(){
      arcadeSfx(i===steps?'electric_hit.wav':'kick.wav',i===steps?.92:.28);
      setTimeout(()=>fx.remove(),440);
      if(i===steps){
-       hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';
+       hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();
        impactFX(F2,'kick');applyKnockback('p2','kick',false);
        if(hp2<=0){startDefeatSequence();return;}
        if(!aiBlocking){
@@ -1368,7 +1393,7 @@ function launchGiovannaSkull(){arcadeSfx('skull_fly.wav',.72);
   if(hit||dist<30){
    giovannaSkullFlying=false;giovannaSkullProjectile.style.display='none';explodeGiovannaSkull(tx,ty);arcadeSfx('skull_explosion.wav',.86);
    if(defeatState==='fight'&&hp2>0){
-    hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';impactFX(F2,'kick');sfx('kick');applyKnockback('p2','kick',false);
+    hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();impactFX(F2,'kick');sfx('kick');applyKnockback('p2','kick',false);
     document.getElementById('combatStatus').textContent='💀 CAVEIRA EXPLODIU • VIDA P2: '+hp2;
     if(hp2===0){startDefeatSequence();return;}
     let st=performance.now(),dur=420,frames=P2_ASSETS.damage.frames;
@@ -1421,7 +1446,7 @@ function launchIsmaelEnergy(){arcadeSfx('energy_launch.wav',.78);
   const hit=b.right>t.left+t.width*.20&&b.left<t.right-t.width*.20&&b.bottom>t.top+t.height*.12&&b.top<t.bottom-t.height*.10;
   if(hit){
    ismaelEnergyFlying=false;ismaelEnergyBall.style.display='none';const hx=(Math.max(b.left,t.left)+Math.min(b.right,t.right))/2,hy=(Math.max(b.top,t.top)+Math.min(b.bottom,t.bottom))/2;
-   ismaelElectricDischarge(hx,hy);arcadeSfx('electric_hit.wav',.88);hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';impactFX(F2,'kick');sfx('kick');applyKnockback('p2','kick',false);
+   ismaelElectricDischarge(hx,hy);arcadeSfx('electric_hit.wav',.88);hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();impactFX(F2,'kick');sfx('kick');applyKnockback('p2','kick',false);
    if(hp2<=0){startDefeatSequence();return;}
    if(!aiBlocking){let st=performance.now(),dur=430,frames=P2_ASSETS.damage.frames;function hurt(tt){let q=Math.min(1,(tt-st)/dur),f=Math.min(frames-1,Math.floor(q*frames));setAnim(I2,'damage',f);if(q<1)requestAnimationFrame(hurt);else setAnim(I2,'idle',0)}requestAnimationFrame(hurt);}return;
   }
@@ -1513,7 +1538,7 @@ function throwRobertoAxe(){arcadeSfx('axe_whoosh.wav',.76);
       hit=true;
       finishAxe(); // immediate synchronous cleanup on impact
       hp2=Math.max(0,hp2-20);
-      life2.style.width=hp2+'%';
+      life2.style.width=hp2+'%';ckMaybePacoca();
       impactFX('p2','kick');
       applyKnockback('p2','kick',false);
 
@@ -1582,7 +1607,7 @@ function runBahiaChave(){
    const tx=(b.left-fr.left+b.width*.5)-w/2,ty=(b.top-fr.top+b.height*.43)-w*.21;
    Object.assign(el.style,{position:'absolute',zIndex:'31',pointerEvents:'none',width:w+'px',height:'auto',left:sx+'px',top:sy+'px',transform:(goingRight?'':'scaleX(-1) ')+'rotate(0deg)',transformOrigin:'50% 50%',filter:'drop-shadow(0 0 8px rgba(255,255,255,.7))'});fight.appendChild(el);
    const ps=performance.now(),flight=430;
-   function fly(t){const q=Math.min(1,(t-ps)/flight),ease=1-Math.pow(1-q,2),x=sx+(tx-sx)*ease,y=sy+(ty-sy)*ease-28*Math.sin(Math.PI*q),rot=(goingRight?1:-1)*720*q;el.style.left=x+'px';el.style.top=y+'px';el.style.transform=(goingRight?'':'scaleX(-1) ')+`rotate(${rot}deg)`;if(q<1){requestAnimationFrame(fly);}else{impactFX(F2,'punch');hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';applyKnockback('p2','punch',false);sfx('hurt');document.getElementById('combatStatus').textContent='CHAVE • ACERTOU!';el.remove();if(hp2===0)startDefeatSequence();}}
+   function fly(t){const q=Math.min(1,(t-ps)/flight),ease=1-Math.pow(1-q,2),x=sx+(tx-sx)*ease,y=sy+(ty-sy)*ease-28*Math.sin(Math.PI*q),rot=(goingRight?1:-1)*720*q;el.style.left=x+'px';el.style.top=y+'px';el.style.transform=(goingRight?'':'scaleX(-1) ')+`rotate(${rot}deg)`;if(q<1){requestAnimationFrame(fly);}else{impactFX(F2,'punch');hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();applyKnockback('p2','punch',false);sfx('hurt');document.getElementById('combatStatus').textContent='CHAVE • ACERTOU!';el.remove();if(hp2===0)startDefeatSequence();}}
    requestAnimationFrame(fly);
  }
  function step(t){const q=Math.min(1,(t-st)/dur),f=Math.min(4,Math.floor(q*5));setAnim(I1,'special',f);if(!launched&&q>=.42)launchChave();if(q<1)requestAnimationFrame(step);else{P1_ASSETS.special=old;busy=false;if(defeatState==='fight')setAnim(I1,'idle',0);}}
@@ -1620,7 +1645,7 @@ function runHelbertyVoltaica(){
  const voltaicaScale=1.08;
  function electricHit(){
    if(hit)return;hit=true;
-   hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';
+   hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();
    impactFX(F2,'kick');applyKnockback('p2','kick',false);sfx('hurt');
    arcadeSfx('electric_hit.wav',.98);
    const oldFilter=I2.style.filter;I2.style.filter='brightness(1.8) saturate(1.8) drop-shadow(0 0 18px #7df6ff)';
@@ -1786,7 +1811,7 @@ function newRosterSpecial(){
       F1.style.left=p1x+'%';
     }else{
       applied=true;
-      hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';
+      hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();
       impactFX(F2,'kick');applyKnockback('p2','kick',false);gainSpecial(0);
       arcadeSfx('electric_hit.wav',.94);
       document.getElementById('combatStatus').textContent='MICK JAGGER ESPECIAL • VIDA P2: '+hp2;
@@ -1797,12 +1822,12 @@ function newRosterSpecial(){
   if(!applied&&q>=.55&&key!=='mick'){applied=true;
    const d=distancePct();
    if(key==='subze' && d<=28){
-      subZeFreezeUntil=performance.now()+2200; aiBusy=true; aiBlocking=false;
+      subZeFreezeUntil=performance.now()+2200; aiBusy=true; aiBlocking=false;ckMaybePacoca();
       I2.style.filter='sepia(.15) saturate(.75) hue-rotate(155deg) brightness(1.08)';
       document.getElementById('combatStatus').textContent='SUB ZÉ • CONGELADO! VULNERÁVEL';
       setTimeout(()=>{if(performance.now()>=subZeFreezeUntil){I2.style.filter='';aiBusy=false;aiNextThink=performance.now()+250;if(p1DefeatState==='fight')setAnim(I2,'idle',0);}},2250);
    } else if(key!=='subze' && d<=30){
-      hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';impactFX(F2,'kick');applyKnockback('p2','kick',false);gainSpecial(0);
+      hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();impactFX(F2,'kick');applyKnockback('p2','kick',false);gainSpecial(0);
       document.getElementById('combatStatus').textContent=FIGHTER_META[key].name+' ESPECIAL • VIDA P2: '+hp2;
       if(hp2===0)startDefeatSequence();
    } else document.getElementById('combatStatus').textContent='ESPECIAL FORA DE ALCANCE';
@@ -1814,7 +1839,7 @@ function newRosterSpecial(){
     const r1=F1.getBoundingClientRect(),r2=F2.getBoundingClientRect();
     const gap=Math.abs((r2.left+r2.width/2)-(r1.left+r1.width/2));
     if(gap<=Math.max(105,Math.min(r1.width,r2.width)*.48)){
-      applied=true;hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';
+      applied=true;hp2=Math.max(0,hp2-25);life2.style.width=hp2+'%';ckMaybePacoca();
       impactFX(F2,'kick');applyKnockback('p2','kick',false);arcadeSfx('electric_hit.wav',.94);
       document.getElementById('combatStatus').textContent='MICK JAGGER ESPECIAL • VIDA P2: '+hp2;
       if(hp2===0)startDefeatSequence();
@@ -2171,7 +2196,7 @@ function launchWilsonTornado(fromAI=false){
      hp1=Math.max(0,hp1-25);life1.style.width=hp1+'%';impactFX(F1,'kick');applyKnockback('p1','kick',false);
      if(hp1===0)startP1Defeat();else{const st=performance.now(),du=470,fr=P1_ASSETS.damage.frames;p1HurtUntil=st+du;(function h(tt){if(p1DefeatState!=='fight')return;let z=Math.min(1,(tt-st)/du),f=Math.min(fr-1,Math.floor(z*fr));setAnim(I1,'damage',f);if(z<1)requestAnimationFrame(h);else{p1HurtUntil=0;if(!busy)setAnim(I1,'idle',0);}})(performance.now());}
    }else{
-     const dmg=blocking?9:25;hp2=Math.max(0,hp2-dmg);life2.style.width=hp2+'%';impactFX(F2,'kick');applyKnockback('p2','kick',blocking);
+     const dmg=blocking?9:25;hp2=Math.max(0,hp2-dmg);life2.style.width=hp2+'%';ckMaybePacoca();impactFX(F2,'kick');applyKnockback('p2','kick',blocking);
      if(hp2===0)startDefeatSequence();else{const st=performance.now(),du=470,fr=P2_ASSETS.damage.frames;p2HurtUntil=st+du;(function h(tt){let z=Math.min(1,(tt-st)/du),f=Math.min(fr-1,Math.floor(z*fr));setAnim(I2,'damage',f);if(z<1)requestAnimationFrame(h);else{p2HurtUntil=0;setAnim(I2,'idle',0);}})(performance.now());}
    }
  }
@@ -2227,7 +2252,7 @@ function launchBahiaBomb(fromAI=false){
      hp1=Math.max(0,hp1-25);life1.style.width=hp1+'%';impactFX(F1,'kick');applyKnockback('p1','kick',false);
      if(hp1===0)startP1Defeat();else{const st=performance.now(),du=470,fr=P1_ASSETS.damage.frames;p1HurtUntil=st+du;(function h(tt){if(p1DefeatState!=='fight')return;let z=Math.min(1,(tt-st)/du),f=Math.min(fr-1,Math.floor(z*fr));setAnim(I1,'damage',f);if(z<1)requestAnimationFrame(h);else{p1HurtUntil=0;if(!busy)setAnim(I1,'idle',0);}})(performance.now());}
    }else{
-     const dmg=blocking?9:25;hp2=Math.max(0,hp2-dmg);life2.style.width=hp2+'%';impactFX(F2,'kick');applyKnockback('p2','kick',blocking);
+     const dmg=blocking?9:25;hp2=Math.max(0,hp2-dmg);life2.style.width=hp2+'%';ckMaybePacoca();impactFX(F2,'kick');applyKnockback('p2','kick',blocking);
      if(hp2===0)startDefeatSequence();else{const st=performance.now(),du=470,fr=P2_ASSETS.damage.frames;p2HurtUntil=st+du;(function h(tt){let z=Math.min(1,(tt-st)/du),f=Math.min(fr-1,Math.floor(z*fr));setAnim(I2,'damage',f);if(z<1)requestAnimationFrame(h);else{p2HurtUntil=0;setAnim(I2,'idle',0);}})(performance.now());}
    }
  }
