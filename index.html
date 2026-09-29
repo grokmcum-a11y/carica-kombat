@@ -441,6 +441,9 @@ body.mobileFight #mobileControls{display:block}
 @media (orientation:portrait) and (max-width:900px){#rotateHint{display:flex}}
 @media (max-height:500px){.mpad{width:158px;height:158px}.mpad .mbtn{width:54px;height:54px}.mup{left:52px}.mleft{top:52px}.mdown{left:52px;top:104px}.mright{left:104px;top:52px}.mactions{width:168px;height:128px}.mactions .mbtn{width:68px;height:68px}.mpunch{right:68px}.mkick{bottom:50px}}
 
+/* V05.4.2 — ANTI-PICOTE 2: compositor hints, sem alterar escala/posição */
+#p1,#p2,#p1img,#p2img,#impactBurst,#ckPacocaEgg{will-change:transform,opacity}
+#fightScreen{contain:layout paint style}
 /* V05.4 — Easter egg VAI PAÇOCA */
 #ckPacocaEgg{position:absolute;right:0;bottom:0;z-index:88;width:min(27vw,330px);height:min(64vh,480px);pointer-events:none;overflow:hidden;opacity:0;transform:translateX(112%);transition:none;filter:drop-shadow(-8px 6px 8px rgba(0,0,0,.65));}
 #ckPacocaEgg img{position:absolute;right:-2%;bottom:-2%;height:100%;width:auto;max-width:none;}
@@ -866,7 +869,14 @@ function startRoundIntro(){
 let audioCtx=null;
 function getAudioCtx(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}catch(e){return null}}
 const SFX_FILES={punch:'punch.wav',kick:'kick.wav',block:'block.wav',hurt:'hurt_grunt.wav',jump:'jump.wav',fall:'fall.wav',victory:'victory_sting.wav'};
-function arcadeSfx(name,vol=.72){try{const a=new Audio('audio_sfx/'+name);a.volume=vol;a.play().catch(()=>{});}catch(_e){}}
+const ckArcadeAudioPools=new Map();
+function arcadeSfx(name,vol=.72){
+ try{
+  let pool=ckArcadeAudioPools.get(name);
+  if(!pool){pool=Array.from({length:3},()=>{const a=new Audio('audio_sfx/'+name);a.preload='auto';try{a.load();}catch(_e){}return a;});pool._i=0;ckArcadeAudioPools.set(name,pool);}
+  const a=pool[pool._i++%pool.length];a.volume=vol*masterVolume;try{a.currentTime=0;}catch(_e){}a.play().catch(()=>{});
+ }catch(_e){}
+}
 function sfx(kind){
  const ac=getAudioCtx();if(!ac)return;const now=ac.currentTime;
  function tone(type,f1,f2,vol,dur,delay=0){
@@ -1054,8 +1064,8 @@ async function ckPrepareSelectedFight(){
 
 // V05.4 — Easter egg “VAI PAÇOCA?”
 let ckPacocaUsed=false,ckPacocaShowing=false;
-const ckPacocaImgPreload=new Image();ckPacocaImgPreload.src='easter_assets/vai_pacoca.png';
-try{const ckPacocaAudioPreload=new Audio('easter_assets/vai_pacoca.mp3');ckPacocaAudioPreload.preload='auto';ckPacocaAudioPreload.load();}catch(_e){}
+const ckPacocaImgPreload=new Image();ckPacocaImgPreload.decoding='async';ckPacocaImgPreload.src='easter_assets/vai_pacoca.png';if(ckPacocaImgPreload.decode)ckPacocaImgPreload.decode().catch(()=>{});
+const ckPacocaAudio=new Audio('easter_assets/vai_pacoca.mp3');ckPacocaAudio.preload='auto';try{ckPacocaAudio.load();}catch(_e){}
 function ckMaybePacoca(){
  if(ckPacocaUsed||ckPacocaShowing||Math.random()>=.08)return;
  if(matchOver||roundLocked||roundTransition||hp2<=0||p1DefeatState!=='fight')return;
@@ -1064,7 +1074,7 @@ function ckMaybePacoca(){
  ckPacocaUsed=true;ckPacocaShowing=true;
  const el=document.getElementById('ckPacocaEgg');if(!el){ckPacocaShowing=false;return;}
  el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
- try{const a=new Audio('easter_assets/vai_pacoca.mp3');a.volume=.98;a.play().catch(()=>{});}catch(_e){}
+ try{ckPacocaAudio.pause();ckPacocaAudio.currentTime=0;ckPacocaAudio.volume=.98*masterVolume;ckPacocaAudio.play().catch(()=>{});}catch(_e){}
  setTimeout(()=>{el.classList.remove('go');ckPacocaShowing=false;},1220);
 }
 
@@ -2466,7 +2476,7 @@ aiThink=function(now){
 // FRENTE → FRENTE → SOCO. "Frente" é relativo à posição do adversário.
 let SPECIAL_COOLDOWN_MS=2000;
 let towerDifficulty='normal';
-function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V05.3 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
+function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V05.4.2 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
 function startTowerAfterDifficulty(){
  const d=document.getElementById('ckDifficulty');if(d){d.classList.remove('on');d.setAttribute('aria-hidden','true');}
  gameMode='tower';towerActive=false;towerFloor=0;towerOrder=[];menu.style.display='none';document.getElementById('selectScreen').style.display='block';announcer('select_fighter',.94);
@@ -2523,7 +2533,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.3 • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.4.2 • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
