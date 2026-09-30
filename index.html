@@ -475,7 +475,25 @@ body.mobileFight #mobileControls{display:block}
 #ckDifficulty .ckDiffCancel{margin-top:15px;font-size:12px;color:#aaa;font-weight:800}
 @media(max-width:520px){#ckDifficulty .ckDiffBtns{grid-template-columns:1fr}#ckDifficulty button{min-height:64px}}
 </style>
-</head>
+<style id="ck-socorro-intro-style">
+/* V06.0 — SOCORRO: DESAFIO SECRETO (visual only; motor V05.5 preservado) */
+#ckSocorroIntro{position:fixed;inset:0;z-index:2147483500;display:none;overflow:hidden;background:radial-gradient(circle at 68% 48%,rgba(255,90,0,.20),transparent 30%),linear-gradient(110deg,#030305 0%,#09040a 48%,#180406 100%);color:#fff;font-family:Arial,sans-serif;pointer-events:none}
+#ckSocorroIntro.on{display:block}
+#ckSocorroIntro:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 32px,rgba(255,255,255,.025) 33px 34px);opacity:.55}
+#ckSocorroIntro .ckSIKicker{position:absolute;left:6vw;top:15vh;color:#ff7a00;font-weight:1000;font-size:clamp(18px,3vw,38px);letter-spacing:.24em;transform:translateX(-30px);opacity:0}
+#ckSocorroIntro .ckSIName{position:absolute;left:6vw;top:23vh;font-weight:1000;font-style:italic;font-size:clamp(58px,11vw,150px);letter-spacing:.03em;text-shadow:0 8px 22px #000;transform:translateX(-50px);opacity:0}
+#ckSocorroIntro .ckSISub{position:absolute;left:6.5vw;top:47vh;color:#d5d5d5;font-weight:900;font-size:clamp(13px,2vw,25px);letter-spacing:.20em;opacity:0}
+#ckSocorroIntro .ckSIPortrait{position:absolute;right:-5vw;bottom:-8vh;height:min(94vh,920px);max-width:62vw;object-fit:contain;filter:drop-shadow(-20px 10px 28px rgba(0,0,0,.8));transform:translateX(18vw) scale(.96);opacity:0}
+#ckSocorroIntro.on .ckSIKicker{animation:ckSIText .45s .12s ease-out forwards}
+#ckSocorroIntro.on .ckSIName{animation:ckSIText .5s .28s ease-out forwards}
+#ckSocorroIntro.on .ckSISub{animation:ckSIFade .45s .68s ease-out forwards}
+#ckSocorroIntro.on .ckSIPortrait{animation:ckSIPortrait 2.35s .05s cubic-bezier(.16,.8,.22,1) forwards}
+#ckSocorroIntro .ckSILine{position:absolute;left:6vw;top:43vh;width:0;height:4px;background:#ff7a00;box-shadow:0 0 18px #ff5a00}
+#ckSocorroIntro.on .ckSILine{animation:ckSILine .55s .48s ease-out forwards}
+@keyframes ckSIText{to{transform:translateX(0);opacity:1}}@keyframes ckSIFade{to{opacity:1}}@keyframes ckSILine{to{width:min(42vw,620px)}}
+@keyframes ckSIPortrait{0%{transform:translateX(18vw) scale(.96);opacity:0}18%,78%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(2vw) scale(1.02);opacity:0}}
+@media(max-width:700px){#ckSocorroIntro .ckSIName{top:21vh;font-size:clamp(48px,14vw,96px)}#ckSocorroIntro .ckSILine{top:39vh}#ckSocorroIntro .ckSISub{top:43vh;max-width:48vw}#ckSocorroIntro .ckSIPortrait{right:-16vw;height:86vh;max-width:72vw}}
+</style></head>
 <body>
 <style id="ck-fight-loader-style">
 #ckFightLoader{position:fixed;inset:0;z-index:2147483646;display:none;align-items:center;justify-content:center;background:#05080ef2;color:#fff;font-family:Arial,sans-serif}
@@ -593,6 +611,8 @@ body.mobileFight #mobileControls{display:block}
   </div>
 
   <div id="towerTransition"><div class="towerCard"><div class="floor" id="towerTransitionFloor">TORRE</div><div class="opp" id="towerTransitionOpp">ADVERSÁRIO</div><div class="sub" id="towerTransitionSub">PREPARE-SE</div></div></div>
+
+  <div id="ckSocorroIntro" aria-hidden="true"><div class="ckSIKicker">LUTA 10/12 • DESAFIO SECRETO</div><div class="ckSIName">SOCORRO</div><div class="ckSILine"></div><div class="ckSISub">O MORRO TEM DONA.</div><img class="ckSIPortrait" src="socorro_assets/vs.png" alt=""></div>
 
   <div id="fightScreen"><div id="towerScoreHud">SCORE <b id="towerScoreText">000000</b></div><div id="towerHud">TORRE • <b id="towerFloorText">LUTA 01/12</b></div><div id="stormCloudShade"></div><div id="stormNight"></div><div id="stormFlash"></div><div id="stormBolt"></div>
     <div class="fightBg"></div>
@@ -942,16 +962,15 @@ function towerStageForFloor(){
  return seq[Math.max(0,Math.min(seq.length-1,towerFloor))];
 }
 function showTowerTransition(cb,completed=false){const o=document.getElementById('towerTransition'),f=document.getElementById('towerTransitionFloor'),n=document.getElementById('towerTransitionOpp'),sub=document.getElementById('towerTransitionSub');if(!o){cb&&cb();return;}if(completed){f.textContent='TORRE CONCLUÍDA';n.textContent='PARABÉNS!';sub.textContent='TESTE ESTRUTURAL 12/12';}else{f.textContent=towerLabel(towerFloor+1);n.textContent=FIGHTER_META[selectedOpponent].name;sub.textContent=towerFloor===9?'DESAFIO SECRETO':towerFloor===10?'SUB-CHEFE':towerFloor===11?'CHEFE FINAL':'PRÓXIMO COMBATE';}o.classList.add('on');setTimeout(()=>{o.classList.remove('on');if(cb)cb();},completed?2600:1400);}
+let ckSocorroIntroVoicePlayed=false;
 function playSocorroTowerIntro(done){
  if(towerFloor!==9){done();return;}
- const v=document.createElement('video');
- v.src='video_torre/socorro_intro.mp4';v.playsInline=true;v.preload='auto';v.controls=false;
- Object.assign(v.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',objectFit:'cover',background:'#000',zIndex:'99999'});
- document.body.appendChild(v);
- let ended=false;const finish=()=>{if(ended)return;ended=true;try{v.pause()}catch(_e){}v.remove();done();};
- v.addEventListener('ended',finish,{once:true});v.addEventListener('error',finish,{once:true});
- const p=v.play();if(p&&p.catch)p.catch(()=>finish());
- setTimeout(finish,11500);
+ const o=document.getElementById('ckSocorroIntro');if(!o){done();return;}
+ ckSocorroIntroVoicePlayed=true;
+ try{bossVoice('audio_bosses/soc_finalmente.mp3',true)}catch(_e){}
+ o.classList.remove('on');void o.offsetWidth;o.classList.add('on');
+ let ended=false;const finish=()=>{if(ended)return;ended=true;o.classList.remove('on');setTimeout(()=>done&&done(),120);};
+ setTimeout(finish,2500);
 }
 function startTowerFight(showCard=true){
  towerFightStartScore=towerScore;selectedOpponent=towerOrder[towerFloor];selectedStage=towerStageForFloor();configureMatch();applySelectedStage();paintTowerHud();
@@ -2450,7 +2469,7 @@ aiSpecialAttack=function(){if(selectedOpponent==='well'&&towerActive)return well
 const _resetRoundT12=resetRound;
 resetRound=function(){_resetRoundT12();p1SpecialCooldownUntil=0;p2SpecialCooldownUntil=0;if(!(towerActive&&selectedOpponent==='chefao')){bossFuryActive=false;bossFuryUsed=false;F2.classList.remove('bossFuryAura');}};
 const _startTowerFightT12=startTowerFight;
-startTowerFight=function(showCard=true){if(towerFloor===11){bossFuryActive=false;bossFuryUsed=false;} _startTowerFightT12(showCard);setTimeout(()=>{const cfg=BOSS_VOICES[selectedOpponent];if(cfg&&cfg.entry)bossVoice(cfg.entry,true);},selectedOpponent==='socorro'?2600:1700);};
+startTowerFight=function(showCard=true){if(towerFloor===11){bossFuryActive=false;bossFuryUsed=false;}if(selectedOpponent!=='socorro')ckSocorroIntroVoicePlayed=false; _startTowerFightT12(showCard);setTimeout(()=>{const cfg=BOSS_VOICES[selectedOpponent];if(cfg&&cfg.entry){if(selectedOpponent==='socorro'&&ckSocorroIntroVoicePlayed){ckSocorroIntroVoicePlayed=false;return;}bossVoice(cfg.entry,true);}},selectedOpponent==='socorro'?2600:1700);};
 const _finishRoundT12=finishRound;
 finishRound=function(winner){
  // Chefão da Torre é uma batalha única de duas fases: 100% + sobrevida/Fúria 35%.
@@ -2481,7 +2500,7 @@ aiThink=function(now){
 // FRENTE → FRENTE → SOCO. "Frente" é relativo à posição do adversário.
 let SPECIAL_COOLDOWN_MS=2000;
 let towerDifficulty='normal';
-function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V05.5 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
+function ckUpdateVersionBadge(){const b=document.getElementById('v17badge');if(b)b.textContent='V1.7.5.2 • V06.0 • '+(towerDifficulty==='easy'?'FÁCIL':'NORMAL')+' • COOLDOWN '+(SPECIAL_COOLDOWN_MS/1000)+'s';}
 function startTowerAfterDifficulty(){
  const d=document.getElementById('ckDifficulty');if(d){d.classList.remove('on');d.setAttribute('aria-hidden','true');}
  gameMode='tower';towerActive=false;towerFloor=0;towerOrder=[];menu.style.display='none';document.getElementById('selectScreen').style.display='block';announcer('select_fighter',.94);
@@ -2538,7 +2557,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V05.5 • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.0 • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
