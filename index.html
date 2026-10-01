@@ -494,6 +494,17 @@ body.mobileFight #mobileControls{display:block}
 @keyframes ckSIPortrait{0%{transform:translateX(18vw) scale(.96);opacity:0}18%,78%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(2vw) scale(1.02);opacity:0}}
 @media(max-width:700px){#ckSocorroIntro .ckSIName{top:21vh;font-size:clamp(48px,14vw,96px)}#ckSocorroIntro .ckSILine{top:39vh}#ckSocorroIntro .ckSISub{top:43vh;max-width:48vw}#ckSocorroIntro .ckSIPortrait{right:-16vw;height:86vh;max-width:72vw}}
 
+
+/* V06.2 — CHEFÃO BÁRBARO: BATALHA FINAL (visual only; motor preservado) */
+#ckBossIntro{position:fixed;inset:0;z-index:2147483500;display:none;overflow:hidden;background:radial-gradient(circle at 72% 43%,rgba(255,45,0,.30),transparent 32%),linear-gradient(110deg,#020203 0%,#100405 45%,#240500 100%);color:#fff;font-family:Arial,sans-serif;pointer-events:none}
+#ckBossIntro.on{display:block}#ckBossIntro:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 30px,rgba(255,80,30,.045) 31px 33px);opacity:.72}
+#ckBossIntro .ckBIKicker{position:absolute;left:6vw;top:14vh;color:#ff4b18;font-weight:1000;font-size:clamp(18px,3vw,40px);letter-spacing:.24em;transform:translateX(-30px);opacity:0}
+#ckBossIntro .ckBIName{position:absolute;left:6vw;top:22vh;font-weight:1000;font-style:italic;font-size:clamp(52px,9.5vw,132px);letter-spacing:.02em;text-shadow:0 8px 24px #000,0 0 28px #8b1600;transform:translateX(-50px);opacity:0}
+#ckBossIntro .ckBISub{position:absolute;left:6.5vw;top:47vh;color:#ffb08e;font-weight:900;font-size:clamp(13px,2vw,25px);letter-spacing:.17em;opacity:0}
+#ckBossIntro .ckBIPortrait{position:absolute;right:-4vw;bottom:-8vh;height:min(96vh,940px);max-width:62vw;object-fit:contain;filter:drop-shadow(-22px 10px 30px rgba(0,0,0,.9));transform:translateX(18vw) scale(.96);opacity:0}
+#ckBossIntro .ckBILine{position:absolute;left:6vw;top:43vh;width:0;height:5px;background:#ff3d0a;box-shadow:0 0 22px #ff2600}
+#ckBossIntro.on .ckBIKicker{animation:ckSIText .45s .10s ease-out forwards}#ckBossIntro.on .ckBIName{animation:ckSIText .52s .25s ease-out forwards}#ckBossIntro.on .ckBISub{animation:ckSIFade .45s .68s ease-out forwards}#ckBossIntro.on .ckBIPortrait{animation:ckSIPortrait 2.55s .03s cubic-bezier(.16,.8,.22,1) forwards}#ckBossIntro.on .ckBILine{animation:ckSILine .58s .46s ease-out forwards}
+@media(max-width:700px){#ckBossIntro .ckBIName{top:20vh;font-size:clamp(44px,12vw,86px)}#ckBossIntro .ckBILine{top:39vh}#ckBossIntro .ckBISub{top:43vh;max-width:48vw}#ckBossIntro .ckBIPortrait{right:-16vw;height:88vh;max-width:74vw}}
 /* V06.1 — WELL O IMPERADOR: SUB-CHEFE (visual only; motor preservado) */
 #ckWellIntro{position:fixed;inset:0;z-index:2147483500;display:none;overflow:hidden;background:radial-gradient(circle at 72% 45%,rgba(255,190,35,.24),transparent 31%),linear-gradient(110deg,#030305 0%,#090711 46%,#1b1002 100%);color:#fff;font-family:Arial,sans-serif;pointer-events:none}
 #ckWellIntro.on{display:block}#ckWellIntro:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 32px,rgba(255,210,90,.035) 33px 34px);opacity:.6}
@@ -626,6 +637,7 @@ body.mobileFight #mobileControls{display:block}
 
   <div id="ckSocorroIntro" aria-hidden="true"><div class="ckSIKicker">LUTA 10/12 • DESAFIO SECRETO</div><div class="ckSIName">SOCORRO</div><div class="ckSILine"></div><div class="ckSISub">O MORRO TEM DONA.</div><img class="ckSIPortrait" src="socorro_assets/vs.png" alt=""></div>
   <div id="ckWellIntro" aria-hidden="true"><div class="ckWIKicker">LUTA 11/12 • SUB-CHEFE</div><div class="ckWIName">WELL O IMPERADOR</div><div class="ckWILine"></div><div class="ckWISub">AJOELHE-SE DIANTE DO IMPERADOR!</div><img class="ckWIPortrait" src="well_assets/vs.png" alt=""></div>
+  <div id="ckBossIntro" aria-hidden="true"><div class="ckBIKicker">LUTA 12/12 • BATALHA FINAL</div><div class="ckBIName">CHEFÃO BÁRBARO</div><div class="ckBILine"></div><div class="ckBISub">SE CHEGOU ATÉ AQUI... AGORA ENFRENTE O FIM.</div><img class="ckBIPortrait" src="boss_assets/vs.png" alt=""></div>
 
   <div id="fightScreen"><div id="towerScoreHud">SCORE <b id="towerScoreText">000000</b></div><div id="towerHud">TORRE • <b id="towerFloorText">LUTA 01/12</b></div><div id="stormCloudShade"></div><div id="stormNight"></div><div id="stormFlash"></div><div id="stormBolt"></div>
     <div class="fightBg"></div>
@@ -995,10 +1007,21 @@ function playWellTowerIntro(done){
  let ended=false;const finish=()=>{if(ended)return;ended=true;o.classList.remove('on');setTimeout(()=>done&&done(),120);};
  setTimeout(finish,2500);
 }
+
+let ckBossIntroVoicePlayed=false;
+function playBossTowerIntro(done){
+ if(towerFloor!==11){done();return;}
+ const o=document.getElementById('ckBossIntro');if(!o){done();return;}
+ ckBossIntroVoicePlayed=true;
+ try{bossVoice('audio_bosses/boss_chegou.mp3',true)}catch(_e){}
+ o.classList.remove('on');void o.offsetWidth;o.classList.add('on');
+ let ended=false;const finish=()=>{if(ended)return;ended=true;o.classList.remove('on');setTimeout(()=>done&&done(),120);};
+ setTimeout(finish,2750);
+}
 function startTowerFight(showCard=true){
  towerFightStartScore=towerScore;selectedOpponent=towerOrder[towerFloor];selectedStage=towerStageForFloor();configureMatch();applySelectedStage();paintTowerHud();
  const go=()=>{document.getElementById('selectScreen').style.display='none';document.getElementById('stageScreen').style.display='none';document.getElementById('fightScreen').style.display='block';currentRound=1;p1Rounds=0;p2Rounds=0;matchOver=false;roundTransition=false;roundLocked=false;busy=false;aiBusy=false;continueShown=false;updateRoundDots();resetRound();};
- if(showCard){const afterIntro=()=>showTowerTransition(go);if(towerFloor===9)playSocorroTowerIntro(afterIntro);else if(towerFloor===10)playWellTowerIntro(afterIntro);else afterIntro();}else go();
+ if(showCard){const afterIntro=()=>showTowerTransition(go);if(towerFloor===9)playSocorroTowerIntro(afterIntro);else if(towerFloor===10)playWellTowerIntro(afterIntro);else if(towerFloor===11)playBossTowerIntro(afterIntro);else afterIntro();}else go();
 }
 function beginTower(){towerActive=true;towerFloor=0;towerResetScore();buildTowerOrder();startTowerFight(true);}
 function advanceTower(){
@@ -2492,7 +2515,7 @@ aiSpecialAttack=function(){if(selectedOpponent==='well'&&towerActive)return well
 const _resetRoundT12=resetRound;
 resetRound=function(){_resetRoundT12();p1SpecialCooldownUntil=0;p2SpecialCooldownUntil=0;if(!(towerActive&&selectedOpponent==='chefao')){bossFuryActive=false;bossFuryUsed=false;F2.classList.remove('bossFuryAura');}};
 const _startTowerFightT12=startTowerFight;
-startTowerFight=function(showCard=true){if(towerFloor===11){bossFuryActive=false;bossFuryUsed=false;}if(selectedOpponent!=='socorro')ckSocorroIntroVoicePlayed=false;if(selectedOpponent!=='well')ckWellIntroVoicePlayed=false; _startTowerFightT12(showCard);setTimeout(()=>{const cfg=BOSS_VOICES[selectedOpponent];if(cfg&&cfg.entry){if(selectedOpponent==='socorro'&&ckSocorroIntroVoicePlayed){ckSocorroIntroVoicePlayed=false;return;}if(selectedOpponent==='well'&&ckWellIntroVoicePlayed){ckWellIntroVoicePlayed=false;return;}bossVoice(cfg.entry,true);}},(selectedOpponent==='socorro'||selectedOpponent==='well')?2600:1700);};
+startTowerFight=function(showCard=true){if(towerFloor===11){bossFuryActive=false;bossFuryUsed=false;}if(selectedOpponent!=='socorro')ckSocorroIntroVoicePlayed=false;if(selectedOpponent!=='well')ckWellIntroVoicePlayed=false;if(selectedOpponent!=='chefao')ckBossIntroVoicePlayed=false; _startTowerFightT12(showCard);setTimeout(()=>{const cfg=BOSS_VOICES[selectedOpponent];if(cfg&&cfg.entry){if(selectedOpponent==='socorro'&&ckSocorroIntroVoicePlayed){ckSocorroIntroVoicePlayed=false;return;}if(selectedOpponent==='well'&&ckWellIntroVoicePlayed){ckWellIntroVoicePlayed=false;return;}if(selectedOpponent==='chefao'&&ckBossIntroVoicePlayed){ckBossIntroVoicePlayed=false;return;}bossVoice(cfg.entry,true);}},(selectedOpponent==='socorro'||selectedOpponent==='well'||selectedOpponent==='chefao')?2900:1700);};
 const _finishRoundT12=finishRound;
 finishRound=function(winner){
  // Chefão da Torre é uma batalha única de duas fases: 100% + sobrevida/Fúria 35%.
@@ -2580,7 +2603,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.0 • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.2 • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
