@@ -469,7 +469,7 @@ body.mobileFight #mobileControls{display:block}
 #gioTerrorShake.on{display:block;animation:gioShake .08s linear 8}
 @keyframes gioShake{0%,100%{transform:translate(0)}25%{transform:translate(-5px,3px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,-4px)}}
 
-/* V06.3.4 — Giovanna: sprites normalizados sem esticar + fogo corporal estilizado */
+/* V06.3.5 — Giovanna: sprites normalizados sem esticar + fogo corporal estilizado */
 #gioTerrorFire{display:none!important}
 #p2img.gioTerrorBurn{animation:gioBodyBurn .12s infinite alternate!important}
 @keyframes gioBodyBurn{
@@ -1781,7 +1781,7 @@ function runHelbertyVoltaica(){
  requestAnimationFrame(step);return true;
 }
 
-// V06.3.4 — GIOVANNA: RAIO ROXO ↓ → FRENTE → CHUTE e CARICALITY TRÁS → TRÁS → CHUTE.
+// V06.3.5 — GIOVANNA: RAIO ROXO ↓ → FRENTE → CHUTE e CARICALITY TRÁS → TRÁS → CHUTE.
 let giovannaGuitarCommand=[],giovannaCaricalityCommand=[];
 function gioFrontBack(){const f=p1Center()<p2Center()?'d':'a';return {front:f,back:f==='d'?'a':'d'};}
 function gioGuitarPush(k){
@@ -1825,6 +1825,8 @@ async function runGiovannaTerror(){
  await new Promise(r=>setTimeout(r,700));shake?.classList.remove('on');lava?.classList.add('on');await new Promise(r=>setTimeout(r,380));
  // 2) Show da Giovanna: somente o spritesheet novo de Caricality (5x1).
  P1_ASSETS.special={src:'giovanna_terror/caricality.png',frames:5};
+ // V06.3.5: invocacao e guitarra usam o slot 'special'; force reload do novo sheet.
+ I1.dataset.anim='';setAnim(I1,'special',0);
  let riff=null;try{riff=new Audio('giovanna_terror/metal-loop.wav');riff.volume=.82;riff.play().catch(()=>{});}catch(_e){}
  const isMick=currentP2Key()==='mick';
  if(isMick)P2_ASSETS.special={src:'giovanna_terror/mick_queima.png',frames:5};
@@ -2691,7 +2693,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.3.4 • GIOVANNA TERROR CARICALITY • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.3.5 • GIOVANNA TERROR CARICALITY • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
