@@ -455,6 +455,19 @@ body.mobileFight #mobileControls{display:block}
 @keyframes ckPedroP2{0%,19%{opacity:0}20%,41%{opacity:1}42%,100%{opacity:0}}
 @keyframes ckPedroP3{0%,41%{opacity:0}42%,78%{opacity:1}79%,100%{opacity:0}}
 @media(max-width:700px){#ckPacocaEgg{width:min(50vw,390px);height:min(64vh,430px)}}
+
+/* V06.3 — GIOVANNA'S TERROR */
+#gioTerrorLava{position:absolute;inset:0;z-index:2;display:none;pointer-events:none;background:#000 url("giovanna_terror/lava.png") center/cover no-repeat;filter:saturate(1.12) contrast(1.04)}
+#gioTerrorLava.on{display:block;animation:gioLavaIn .42s ease-out both}
+@keyframes gioLavaIn{from{opacity:0}to{opacity:1}}
+#gioTerrorFire{position:absolute;z-index:32;display:none;pointer-events:none;width:110px;height:170px;transform:translate(-50%,-85%);filter:drop-shadow(0 0 18px #ff6a00)}
+#gioTerrorFire.on{display:block}
+#gioTerrorFire:before,#gioTerrorFire:after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:100%;border-radius:50% 50% 45% 45%;background:radial-gradient(ellipse at 50% 78%,#fff6a0 0 8%,#ffd33d 9% 24%,#ff6a00 25% 52%,rgba(255,35,0,.82) 53% 68%,transparent 69%);animation:gioFlame .16s infinite alternate ease-in-out;transform-origin:50% 100%}
+#gioTerrorFire:after{left:28%;right:28%;height:78%;bottom:5%;animation-duration:.11s;filter:brightness(1.2)}
+@keyframes gioFlame{from{transform:scale(.88,1) rotate(-3deg)}to{transform:scale(1.08,.92) rotate(4deg)}}
+#gioTerrorShake{position:absolute;inset:0;z-index:90;display:none;pointer-events:none}
+#gioTerrorShake.on{display:block;animation:gioShake .08s linear 8}
+@keyframes gioShake{0%,100%{transform:translate(0)}25%{transform:translate(-5px,3px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,-4px)}}
 </style>
 <!-- PC TESTE 02 ALLAN BAHIA • ESCALA FIX + NUVEM ALPHA -->
 
@@ -639,7 +652,7 @@ body.mobileFight #mobileControls{display:block}
   <div id="ckWellIntro" aria-hidden="true"><div class="ckWIKicker">LUTA 11/12 • SUB-CHEFE</div><div class="ckWIName">WELL O IMPERADOR</div><div class="ckWILine"></div><div class="ckWISub">AJOELHE-SE DIANTE DO IMPERADOR!</div><img class="ckWIPortrait" src="well_assets/vs.png" alt=""></div>
   <div id="ckBossIntro" aria-hidden="true"><div class="ckBIKicker">LUTA 12/12 • BATALHA FINAL</div><div class="ckBIName">CHEFÃO BÁRBARO</div><div class="ckBILine"></div><div class="ckBISub">SE CHEGOU ATÉ AQUI... AGORA ENFRENTE O FIM.</div><img class="ckBIPortrait" src="boss_assets/vs.png" alt=""></div>
 
-  <div id="fightScreen"><div id="towerScoreHud">SCORE <b id="towerScoreText">000000</b></div><div id="towerHud">TORRE • <b id="towerFloorText">LUTA 01/12</b></div><div id="stormCloudShade"></div><div id="stormNight"></div><div id="stormFlash"></div><div id="stormBolt"></div>
+  <div id="fightScreen"><div id="gioTerrorLava"></div><div id="gioTerrorFire"></div><div id="gioTerrorShake"></div><div id="towerScoreHud">SCORE <b id="towerScoreText">000000</b></div><div id="towerHud">TORRE • <b id="towerFloorText">LUTA 01/12</b></div><div id="stormCloudShade"></div><div id="stormNight"></div><div id="stormFlash"></div><div id="stormBolt"></div>
     <div class="fightBg"></div>
     <div class="fightMachines"><div class="fightMachine"></div><div class="fightMachine"></div><div class="fightMachine"></div><div class="fightMachine"></div></div>
     <div class="fightFloor"></div>
@@ -1760,6 +1773,47 @@ function runHelbertyVoltaica(){
  requestAnimationFrame(step);return true;
 }
 
+// V06.3 — GIOVANNA: guitarrada ↓ → FRENTE → CHUTE e CARICALITY TRÁS → TRÁS → CHUTE.
+let giovannaGuitarCommand=[],giovannaCaricalityCommand=[];
+function gioFrontBack(){const f=p1Center()<p2Center()?'d':'a';return {front:f,back:f==='d'?'a':'d'};}
+function gioGuitarPush(k){
+ if(selectedFighter!=='giovanna'||defeatState!=='fight'||busy||p1y!==0)return false;
+ const fb=gioFrontBack(),token=k==='s'?'down':k===fb.front?'front':k==='k'?'kick':null;if(!token)return false;
+ const now=performance.now();giovannaGuitarCommand.push({token,time:now});giovannaGuitarCommand=giovannaGuitarCommand.filter(x=>now-x.time<1700).slice(-3);
+ const seq=giovannaGuitarCommand.map(x=>x.token),target=['down','front','kick'];
+ if(seq.length===3&&target.every((v,i)=>v===seq[i])){giovannaGuitarCommand=[];runGiovannaGuitarrada();return true;}
+ for(let i=0;i<seq.length;i++)if(seq[i]!==target[i]){giovannaGuitarCommand=token==='down'?[{token:'down',time:now}]:[];break;}
+ return token==='kick'&&seq.length>=2;
+}
+async function runGiovannaGuitarrada(){
+ if(selectedFighter!=='giovanna'||busy||defeatState!=='fight')return false;
+ if(performance.now()<p1SpecialCooldownUntil){const c=document.getElementById('centerCall');if(c){c.textContent='ESPECIAL • AGUARDE '+(specialCooldownLeft(p1SpecialCooldownUntil)/1000).toFixed(1)+'s';c.className='centerCall show';setTimeout(()=>c.classList.remove('show'),360);}return true;}
+ markP1SpecialCooldown();busy=true;keys.clear();const old=P1_ASSETS.special;P1_ASSETS.special={src:'giovanna_terror/terror_guitarra.png',frames:5};
+ const cs=document.getElementById('combatStatus');if(cs)cs.textContent='GIOVANNA • GUITARRADA!';arcadeSfx('attack_grunt.wav',.45);
+ const st=performance.now(),dur=620;let hit=false;await new Promise(resolve=>{function tick(t){const q=Math.min(1,(t-st)/dur),f=Math.min(4,Math.floor(q*5));setAnim(I1,'special',f);if(!hit&&q>=.54){hit=true;if(distancePct()<=7.2){hp2=Math.max(0,hp2-18);life2.style.width=hp2+'%';impactFX(F2,'kick');try{combatImpactV2(F2,true)}catch(_e){};sfx('hurt');p2HurtUntil=performance.now()+430;setAnim(I2,'damage',0);if(cs)cs.textContent='GUITARRADA! • VIDA P2: '+hp2;}else if(cs)cs.textContent='GUITARRADA FORA DE ALCANCE';}if(q<1)requestAnimationFrame(tick);else resolve();}requestAnimationFrame(tick);});
+ P1_ASSETS.special=old;busy=false;if(defeatState==='fight')setAnim(I1,'idle',0);if(hp2<=0)startDefeatSequence();return true;
+}
+function giovannaCaricalityPush(k){
+ if(!finisherWindowOpen()||finisherTriggered||selectedFighter!=='giovanna'||performance.now()<finalBlowUnlockAt)return false;
+ const back=gioFrontBack().back,token=k===back?'back':k==='k'?'kick':null;if(!token)return false;
+ const now=performance.now();giovannaCaricalityCommand.push({token,time:now});giovannaCaricalityCommand=giovannaCaricalityCommand.filter(x=>now-x.time<1800).slice(-3);
+ const seq=giovannaCaricalityCommand.map(x=>x.token),target=['back','back','kick'],fi=document.getElementById('finisherInput');if(fi)fi.textContent='GIOVANNA\'S TERROR: '+seq.map(x=>x==='back'?'TRÁS':'CHUTE').join(' → ');
+ if(seq.length===3&&target.every((v,i)=>v===seq[i])){giovannaCaricalityCommand=[];runGiovannaTerror();return true;}
+ for(let i=0;i<seq.length;i++)if(seq[i]!==target[i]){giovannaCaricalityCommand=token==='back'?[{token:'back',time:now}]:[];break;}
+ return token==='back'||(token==='kick'&&seq.length>=2);
+}
+async function runGiovannaTerror(){
+ if(!finisherWindowOpen()||finisherTriggered||selectedFighter!=='giovanna')return;
+ if(towerActive){towerCaricalities++;towerAddScore(1500);}finisherTriggered=true;defeatState='finisher';busy=true;blocking=false;aiBusy=true;aiBlocking=false;keys.clear();stopFightTimer();
+ const fin=document.getElementById('finishCall'),fi=document.getElementById('finisherInput'),cs=document.getElementById('combatStatus'),lava=document.getElementById('gioTerrorLava'),fire=document.getElementById('gioTerrorFire'),shake=document.getElementById('gioTerrorShake');if(fin){fin.classList.remove('on');fin.textContent='';}if(fi)fi.textContent="GIOVANNA'S TERROR ✓  TRÁS → TRÁS → CHUTE";if(cs)cs.textContent="GIOVANNA'S TERROR!";
+ const old=P1_ASSETS.special,oldVictory=P1_ASSETS.victory;P1_ASSETS.special={src:'giovanna_terror/terror_caricality.png',frames:5};P1_ASSETS.victory={src:'giovanna_terror/terror_vitoria.png',frames:1};
+ shake?.classList.add('on');await animateFixed(I1,'special',720,false);shake?.classList.remove('on');lava?.classList.add('on');await new Promise(r=>setTimeout(r,420));
+ P1_ASSETS.special={src:'giovanna_terror/terror_guitarra.png',frames:5};let riff=null;try{riff=new Audio('giovanna_terror/metal-loop.wav');riff.volume=.82;riff.play().catch(()=>{});}catch(_e){}
+ const playStart=performance.now(),playDur=5200;await new Promise(resolve=>{function tick(t){const q=Math.min(1,(t-playStart)/playDur),f=Math.floor(((t-playStart)/115)%5);setAnim(I1,'special',f);const r=F2.getBoundingClientRect(),fr=document.getElementById('fightScreen').getBoundingClientRect();fire.style.left=(r.left-fr.left+r.width/2)+'px';fire.style.top=(r.top-fr.top+r.height*.92)+'px';if(q>.18)fire.classList.add('on');if(q>.62){I2.style.filter='grayscale(1) brightness(.28) contrast(1.8)';}if(q<1)requestAnimationFrame(tick);else resolve();}requestAnimationFrame(tick);});
+ try{if(riff){riff.pause();riff.currentTime=0;}}catch(_e){}fire?.classList.remove('on');if(cs)cs.textContent='🔥 CARICALITY!';await animateFixed(I2,'fall',800,false);setAnim(I2,'ko',0);I2.style.filter='grayscale(1) brightness(.28) contrast(1.8)';
+ const cc=document.getElementById('centerCall');if(cc){cc.textContent='CARICALITY!';cc.className='centerCall show';}setAnim(I1,'victory',0);sfx('victory');await new Promise(r=>setTimeout(r,1400));lava?.classList.remove('on');I2.style.filter='';P1_ASSETS.special=old;P1_ASSETS.victory=oldVictory;finishRound('p1');
+}
+
 addEventListener('keydown',e=>{
  if(document.getElementById('fightScreen').style.display!=='block'||roundLocked||matchOver)return;
  let k=e.key.toLowerCase();
@@ -1767,6 +1821,10 @@ addEventListener('keydown',e=>{
  if(finisherWindowOpen()){
  e.preventDefault();
  if(e.repeat)return;
+ // GIOVANNA: CARICALITY exclusivo na janela final — TRÁS → TRÁS → CHUTE.
+ if(selectedFighter==='giovanna' && (k==='a'||k==='d'||k==='k')){
+   if(giovannaCaricalityPush(k))return;
+ }
  // ALLAN BAHIA: CARICALITY exclusivo na janela final — A → A → K.
  if(selectedFighter==='bahia' && (k==='a'||k==='k')){
    if(bahiaCaricalityPush(k))return;
@@ -1781,7 +1839,8 @@ addEventListener('keydown',e=>{
  if(k==='k'){normalFinalBlow('kick');return;}
  return;
 } if(p1DefeatState!=='fight'||defeatState==='finisher')return;
- bahiaChaveRepeat=e.repeat;if(selectedFighter==='bahia'&&(k==='a'||k==='d'||k==='j')){if(bahiaChavePush(k)){e.preventDefault();bahiaChaveRepeat=false;return;}}bahiaChaveRepeat=false;
+ if(selectedFighter==='giovanna'&&(k==='s'||k==='a'||k==='d'||k==='k')){if(gioGuitarPush(k)){e.preventDefault();return;}}
+  bahiaChaveRepeat=e.repeat;if(selectedFighter==='bahia'&&(k==='a'||k==='d'||k==='j')){if(bahiaChavePush(k)){e.preventDefault();bahiaChaveRepeat=false;return;}}bahiaChaveRepeat=false;
  keys.add(k);
  if(k==='j')playAction('punch',330,.48,8);
  if(k==='k')playAction('kick',430,.55,13);
@@ -2603,7 +2662,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.2 • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.3.1 • GIOVANNA TERROR CARICALITY • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
