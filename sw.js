@@ -1,8 +1,8 @@
-const CACHE_NAME='carica-kombat-v0655-ranking-limpo';
+const CACHE_NAME='carica-kombat-v0656-ranking-botao';
 const RANKING_CLEANUP_CUTOFF=Date.now();
 
-self.addEventListener('install', event => self.skipWaiting());
-self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('carica-kombat-') && k !== CACHE_NAME).map(k => caches.delete(k)))).then(() => self.clients.claim())));
+self.addEventListener('install',event=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('carica-kombat-')&&k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 
 async function patchHTML(resp){
   const text=await resp.text();
@@ -12,7 +12,9 @@ async function patchHTML(resp){
   let out=text;
   out=out.replace(/async function ckHallLoadGlobal\(\)\{[\s\S]*?\}\nfunction ckOpenHall/,loadFn+'\nfunction ckOpenHall');
   out=out.replace(/async function ckSaveHall\(\)\{[\s\S]*?\}\n\nconst TOWER_TOTAL=12;/,saveFn+'\n\nconst TOWER_TOTAL=12;');
-  out=out.replace(/V06\.5 • HALL GLOBAL/g,'V06.5.5 • HALL GLOBAL').replace(/V06\.5\.2 • HALL GLOBAL/g,'V06.5.5 • HALL GLOBAL').replace(/V06\.5\.3 • HALL GLOBAL/g,'V06.5.5 • HALL GLOBAL').replace(/V06\.5\.4 • HALL GLOBAL/g,'V06.5.5 • HALL GLOBAL');
+  out=out.replace(/V06\.5 • HALL GLOBAL/g,'V06.5.6 • HALL GLOBAL').replace(/V06\.5\.2 • HALL GLOBAL/g,'V06.5.6 • HALL GLOBAL').replace(/V06\.5\.3 • HALL GLOBAL/g,'V06.5.6 • HALL GLOBAL').replace(/V06\.5\.4 • HALL GLOBAL/g,'V06.5.6 • HALL GLOBAL').replace(/V06\.5\.5 • HALL GLOBAL/g,'V06.5.6 • HALL GLOBAL');
+  const boot=`<style id="ckRankingButtonStyle">#ckRankingGlobalBtn{display:block;width:100%;margin:11px 0;padding:15px 24px;border:1px solid #ff8200;background:linear-gradient(90deg,rgba(255,130,0,.18),rgba(10,12,16,.92));color:white;font-size:17px;font-weight:1000;letter-spacing:.12em;cursor:pointer;box-shadow:0 0 18px rgba(255,120,0,.12)}#ckRankingGlobalBtn:hover,#ckRankingGlobalBtn:focus{outline:none;transform:scale(1.035);box-shadow:0 0 24px rgba(255,120,0,.24)}</style><script>(function(){function addRankingButton(){if(document.getElementById('ckRankingGlobalBtn'))return;const box=document.querySelector('#menu .menuBox')||document.querySelector('.menuBox');if(!box)return;const b=document.createElement('button');b.id='ckRankingGlobalBtn';b.type='button';b.textContent='🌎 RANKING GLOBAL';b.onclick=function(){if(typeof ckOpenHall==='function')ckOpenHall();else{const h=document.getElementById('hall');if(h)h.style.display='flex';}};const note=box.querySelector('.note');if(note)box.insertBefore(b,note);else box.appendChild(b)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addRankingButton);else addRankingButton();setTimeout(addRankingButton,500);})();</script>`;
+  out=out.replace('</head>',boot+'</head>');
   return new Response(out,{status:resp.status,statusText:resp.statusText,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
 }
-self.addEventListener('fetch', event => {if(event.request.method!=='GET')return;const url=new URL(event.request.url);const isHTML=event.request.mode==='navigate'||url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');if(isHTML){event.respondWith(fetch(event.request,{cache:'no-store'}).then(patchHTML).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(hit=>hit||fetch(event.request).then(resp=>{const copy=resp.clone();caches.open(CACHE_NAME).then(c=>c.put(event.request,copy)).catch(()=>{});return resp;})));});
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);const isHTML=event.request.mode==='navigate'||url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');if(isHTML){event.respondWith(fetch(event.request,{cache:'no-store'}).then(patchHTML).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(hit=>hit||fetch(event.request).then(resp=>{const copy=resp.clone();caches.open(CACHE_NAME).then(c=>c.put(event.request,copy)).catch(()=>{});return resp;})));});
