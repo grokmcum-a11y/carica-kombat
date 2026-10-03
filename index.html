@@ -580,7 +580,6 @@ body.mobileFight #mobileControls{display:block}
       <div class="menuTitle">CARICA KOMBAT</div>
       <button data-action="play">LUTA</button>
       <button data-action="tower">TORRE</button>
-      <button data-action="globalHall">🏆 RANKING GLOBAL</button>
       <button data-action="controls">CONTROLES / OPÇÕES</button>
       <div id="audioOptions" class="audioOptions">
         <div class="audioOptionsTitle">ÁUDIO</div>
@@ -794,7 +793,6 @@ document.getElementById('screen').addEventListener('click',e=>{if(!opened)openMe
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>{
  const a=b.dataset.action;
  if(a==='play'){gameMode='fight';menu.style.display='none';document.getElementById('selectScreen').style.display='block';announcer('select_fighter',.94);}
- if(a==='globalHall'){ckOpenGlobalHall();}
  if(a==='tower'){openTowerDifficulty();}
  if(a==='controls'){const panel=document.getElementById('audioOptions');if(panel)panel.classList.toggle('open');note.textContent='A/D andar • W pular • J soco • K chute • S defesa • Especial: FRENTE, FRENTE, SOCO';}
  if(a==='credits') note.textContent='CARICA KOMBAT — projeto em desenvolvimento.';
@@ -993,43 +991,13 @@ function towerAddScore(n){if(!towerActive)return;towerScore+=Math.max(0,Math.rou
 function towerResetScore(){towerScore=0;towerPerfects=0;towerCaricalities=0;towerContinues=0;towerRoundScored=false;towerScorePaint();}
 const CK_SUPABASE_URL='https://xxmvaitifwshuyadbxqf.supabase.co';
 const CK_SUPABASE_KEY='sb_publishable_VJ1SXIEI7kU9Fn5qrhCqQw_-N2_SlH5';
-let ckHallGlobalRows=null,ckHallBusy=false,ckHallAutoTimer=null,ckHallAutoPending=false;
+let ckHallGlobalRows=null,ckHallBusy=false;
 function ckHallRows(){try{return JSON.parse(localStorage.getItem('caricaHallV1')||'[]')}catch(_e){return[]}}
 function ckHallEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function ckHallPaint(rows=ckHallGlobalRows,mode){const ol=document.getElementById('ckHallList'),tag=document.getElementById('ckHallMode');if(!ol)return;const useGlobal=Array.isArray(rows);const list=useGlobal?rows:ckHallRows();if(tag)tag.textContent=mode||(useGlobal?'🌎 RANKING GLOBAL':'📱 RANKING LOCAL / OFFLINE');ol.innerHTML=list.length?list.slice(0,10).map((r,i)=>'<li>'+(i+1)+'º &nbsp; '+ckHallEsc(r.nome||r.name||'PLAYER')+' — '+String(Number(r.score)||0).padStart(6,'0')+'</li>').join(''):'<li>SEJA O PRIMEIRO!</li>';}
-async function ckHallLoadGlobal(){const tag=document.getElementById('ckHallMode');if(tag)tag.textContent='🌎 CARREGANDO RANKING GLOBAL...';try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),4500);const res=await fetch(CK_SUPABASE_URL+'/rest/v1/hall_da_fama?select=nome,personagem,score,perfects,caricalities,continues,criado_em&order=score.desc&limit=10',{headers:{apikey:CK_SUPABASE_KEY},signal:ctl.signal});clearTimeout(tm);if(!res.ok)throw new Error('HTTP '+res.status);ckHallGlobalRows=await res.json();ckHallPaint(ckHallGlobalRows,'🌎 RANKING GLOBAL');return true;}catch(_e){console.warn('Hall Global indisponível:',_e?.message||_e);ckHallGlobalRows=null;ckHallPaint(null,'📱 RANKING LOCAL / OFFLINE');return false;}}
-function ckArmAutoSaveHall(delay=1500){
-  clearTimeout(ckHallAutoTimer);
-  ckHallAutoPending=true;
-  ckHallAutoTimer=setTimeout(()=>{
-    ckHallAutoTimer=null;
-    if(!ckHallAutoPending)return;
-    if(document.getElementById('ckHall')?.classList.contains('on')) ckSaveHall(true);
-  },delay);
-}
-function ckOpenHall(){
-  const o=document.getElementById('ckHall');if(!o)return;
-  document.getElementById('ckHallScore').textContent=String(towerScore).padStart(6,'0');
-  document.getElementById('ckHallStats').textContent='PERFECTS '+towerPerfects+' • CARICALITIES '+towerCaricalities+' • CONTINUES '+towerContinues;
-  o.classList.add('on');
-  ckHallPaint(null,'📱 RANKING LOCAL');
-  ckHallLoadGlobal();
-  const inp=document.getElementById('ckHallName');
-  if(inp)inp.value='';
-  setTimeout(()=>{
-    inp?.focus();
-    ckArmAutoSaveHall(1800);
-  },120);
-}
-function ckOpenGlobalHall(){
-  const o=document.getElementById('ckHall');if(!o)return;
-  const title=o.querySelector('h2'),sub=o.querySelector('.panel>div'),score=document.getElementById('ckHallScore'),stats=document.getElementById('ckHallStats'),inp=document.getElementById('ckHallName'),save=document.getElementById('ckHallSave'),list=document.getElementById('ckHallList');
-  if(title)title.textContent='RANKING GLOBAL';
-  if(sub)sub.textContent='TOP 10 • CARICA KOMBAT';
-  if(score)score.style.display='none'; if(stats)stats.style.display='none'; if(inp)inp.parentElement.style.display='none'; if(save)save.style.display='none';
-  o.classList.add('on'); ckHallPaint(null,'🌎 CARREGANDO RANKING GLOBAL...'); ckHallLoadGlobal();
-}
-async function ckSaveHall(auto=false){clearTimeout(ckHallAutoTimer);ckHallAutoTimer=null;ckHallAutoPending=false;if(ckHallBusy)return;const inp=document.getElementById('ckHallName'),btn=document.getElementById('ckHallSave');let name=(inp?.value||'PLAYER').trim().toUpperCase().slice(0,12)||'PLAYER';let rows=ckHallRows();const localRow={name,score:towerScore,date:Date.now(),fighter:selectedFighter,perfects:towerPerfects,caricalities:towerCaricalities,continues:towerContinues};rows.push(localRow);rows.sort((a,b)=>b.score-a.score);rows=rows.slice(0,10);try{localStorage.setItem('caricaHallV1',JSON.stringify(rows))}catch(_e){}ckHallBusy=true;if(btn){btn.disabled=true;btn.textContent=auto?'SALVANDO AUTOMÁTICO...':'ENVIANDO...';}try{const body={nome:name,personagem:String(selectedFighter||'desconhecido').slice(0,40),score:Math.max(0,Math.round(towerScore||0)),perfects:Math.max(0,Math.round(towerPerfects||0)),caricalities:Math.max(0,Math.round(towerCaricalities||0)),continues:Math.max(0,Math.round(towerContinues||0))};const res=await fetch(CK_SUPABASE_URL+'/rest/v1/hall_da_fama',{method:'POST',headers:{apikey:CK_SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(body)});if(!res.ok)throw new Error('HTTP '+res.status);if(btn)btn.textContent='SALVO GLOBAL ✓';const mode=document.getElementById('ckHallMode');if(mode)mode.textContent='🌎 SALVO GLOBAL ✓';await ckHallLoadGlobal();}catch(_e){console.warn('Falha ao enviar Hall Global:',_e?.message||_e);ckHallGlobalRows=null;ckHallPaint(null,'📱 SALVO LOCAL • GLOBAL OFFLINE');if(btn)btn.textContent='SALVO LOCAL ✓';const mode=document.getElementById('ckHallMode');if(mode)mode.textContent='📱 SALVO LOCAL • GLOBAL OFFLINE';}finally{ckHallBusy=false;setTimeout(()=>{if(btn){btn.disabled=false;btn.textContent='SALVAR NO RANKING';}},1800);}}
+async function ckHallLoadGlobal(){const tag=document.getElementById('ckHallMode');if(tag)tag.textContent='🌎 CARREGANDO RANKING GLOBAL...';try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),4500);const res=await fetch(CK_SUPABASE_URL+'/rest/v1/hall_da_fama?select=nome,personagem,score,perfects,caricalities,continues,criado_em&order=score.desc&limit=10',{headers:{apikey:CK_SUPABASE_KEY},signal:ctl.signal});clearTimeout(tm);if(!res.ok)throw new Error('HTTP '+res.status);ckHallGlobalRows=await res.json();if(!Array.isArray(ckHallGlobalRows))ckHallGlobalRows=[];ckHallGlobalRows.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));ckHallPaint(ckHallGlobalRows,'🌎 RANKING GLOBAL');return true;}catch(_e){console.warn('Hall Global indisponível:',_e?.message||_e);ckHallGlobalRows=null;ckHallPaint(null,'📱 RANKING LOCAL / OFFLINE');return false;}}
+function ckOpenHall(){const o=document.getElementById('ckHall');if(!o)return;document.getElementById('ckHallScore').textContent=String(towerScore).padStart(6,'0');document.getElementById('ckHallStats').textContent='PERFECTS '+towerPerfects+' • CARICALITIES '+towerCaricalities+' • CONTINUES '+towerContinues;o.classList.add('on');ckHallPaint(null,'📱 RANKING LOCAL');ckHallLoadGlobal();setTimeout(()=>document.getElementById('ckHallName')?.focus(),120);}
+async function ckSaveHall(){if(ckHallBusy)return;const inp=document.getElementById('ckHallName'),btn=document.getElementById('ckHallSave');let name=(inp?.value||'PLAYER').trim().toUpperCase().slice(0,12)||'PLAYER';let rows=ckHallRows();const localRow={name,score:towerScore,date:Date.now(),fighter:selectedFighter,perfects:towerPerfects,caricalities:towerCaricalities,continues:towerContinues};rows.push(localRow);rows.sort((a,b)=>b.score-a.score);rows=rows.slice(0,10);try{localStorage.setItem('caricaHallV1',JSON.stringify(rows))}catch(_e){}ckHallBusy=true;if(btn){btn.disabled=true;btn.textContent='ENVIANDO...';}try{const body={nome:name,personagem:String(selectedFighter||'desconhecido').slice(0,40),score:Math.max(0,Math.round(towerScore||0)),perfects:Math.max(0,Math.round(towerPerfects||0)),caricalities:Math.max(0,Math.round(towerCaricalities||0)),continues:Math.max(0,Math.round(towerContinues||0))};const res=await fetch(CK_SUPABASE_URL+'/rest/v1/hall_da_fama',{method:'POST',headers:{apikey:CK_SUPABASE_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(body)});if(!res.ok)throw new Error('HTTP '+res.status);const created=await res.json();if(btn)btn.textContent='SALVO GLOBAL ✓';const loaded=await ckHallLoadGlobal();if((!loaded||!Array.isArray(ckHallGlobalRows)||ckHallGlobalRows.length===0)&&Array.isArray(created)&&created.length){ckHallGlobalRows=[created[0]];ckHallPaint(ckHallGlobalRows,'🌎 RANKING GLOBAL');}}catch(_e){console.warn('Falha ao enviar Hall Global:',_e?.message||_e);ckHallGlobalRows=null;ckHallPaint(null,'📱 SALVO LOCAL • GLOBAL OFFLINE');if(btn)btn.textContent='SALVO LOCAL ✓';}finally{ckHallBusy=false;setTimeout(()=>{if(btn){btn.disabled=false;btn.textContent='SALVAR NO RANKING';}},1800);}}
 
 const TOWER_TOTAL=12;
 function shuffleTower(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -2730,7 +2698,7 @@ window.addEventListener('keydown',function(e){
  }
 },true);
 </script>
-<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.5.5 • AUTO SAVE REAL • GLOBAL • NORMAL • COOLDOWN 2s</div>
+<div id="v17badge" style="position:fixed;right:8px;bottom:6px;z-index:99999;color:#ff9a28;font:700 11px Arial;opacity:.72">V1.7.5.2 • V06.5 • HALL GLOBAL • NORMAL • COOLDOWN 2s</div>
 <div id="rotateHint"><div><b>VIRE O CELULAR ↻</b>CARICA KOMBAT foi preparado para jogar na horizontal.</div></div>
 <div id="mobileControls" aria-label="Controles mobile">
  <div class="mpad">
@@ -2898,8 +2866,7 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&docum
 <div id="ckHall"><div class="panel"><h2>HALL DA FAMA</h2><div>TORRE CONCLUÍDA</div><div class="score" id="ckHallScore">000000</div><div id="ckHallStats"></div><div id="ckHallMode" style="margin-top:8px;font-weight:900;color:#ffd54a">📱 RANKING LOCAL</div><p><input id="ckHallName" maxlength="12" placeholder="SEU NOME" autocomplete="off"></p><button id="ckHallSave">SALVAR NO RANKING</button><button id="ckHallClose">FECHAR</button><ol id="ckHallList"></ol></div></div>
 <script id="ck-hall-script">
 document.getElementById('ckHallSave')?.addEventListener('click',ckSaveHall);
-document.getElementById('ckHallClose')?.addEventListener('click',()=>{const o=document.getElementById('ckHall');o?.classList.remove('on');const t=o?.querySelector('h2'),sub=o?.querySelector('.panel>div'),sc=document.getElementById('ckHallScore'),st=document.getElementById('ckHallStats'),inp=document.getElementById('ckHallName'),sv=document.getElementById('ckHallSave');if(t)t.textContent='HALL DA FAMA';if(sub)sub.textContent='TORRE CONCLUÍDA';if(sc)sc.style.display='';if(st)st.style.display='';if(inp?.parentElement)inp.parentElement.style.display='';if(sv)sv.style.display='';towerActive=false;gameMode='fight';paintTowerHud();towerScorePaint();opened=false;if(menu)menu.style.display='grid';if(press)press.style.display='none';});
-document.getElementById('ckHallName')?.addEventListener('input',()=>{if(!ckHallBusy)ckArmAutoSaveHall(1800);});
+document.getElementById('ckHallClose')?.addEventListener('click',()=>{document.getElementById('ckHall')?.classList.remove('on');towerActive=false;gameMode='fight';paintTowerHud();towerScorePaint();opened=false;if(menu)menu.style.display='none';if(press)press.style.display='block';});
 document.getElementById('ckHallName')?.addEventListener('keydown',e=>{if(e.key==='Enter')ckSaveHall();});
 </script></body>
 </html>
